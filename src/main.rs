@@ -1,3 +1,6 @@
+use std::env::args;
+use std::io::{self, stdout, BufRead, Write};
+
 mod token;
 mod token_type;
 
@@ -7,31 +10,24 @@ use scanner::*;
 mod error;
 use error::*;
 
-use std::env::args;
-use std::fs::File;
-use std::io::{self, BufRead, BufReader, Read};
-
 pub fn main() {
     let args: Vec<String> = args().collect();
 
-    if args.len() > 2 {
-        println!("Usage: lox-ast [script]");
-        std::process::exit(64);
-    } else if args.len() == 1 {
-        run_file(&args[1]).expect("Could not run file");
-    } else {
-        run_prompt();
+    match args.len() {
+        1 => run_prompt(),
+        2 => run_file(&args[1]).expect("Could not run file"),
+        _ => {
+            println!("Usage: lox-ast [script]");
+            std::process::exit(64);
+        }
     }
 }
 
-fn run_file(path: &String) -> io::Result<()> {
+fn run_file(path: &str) -> io::Result<()> {
     let buf = std::fs::read_to_string(path)?;
-    match run(buf) {
-        Ok(_) => {}
-        Err(m) => {
-            m.report("".to_string());
-            std::process::exit(65);
-        }
+    if run(buf).is_err() {
+        // Ignore: error was already reported
+        std::process::exit(65);
     }
 
     Ok(())
@@ -40,20 +36,18 @@ fn run_file(path: &String) -> io::Result<()> {
 fn run_prompt() {
     let stdin = io::stdin();
     print!("> ");
+    let _ = stdout().flush();
     for line in stdin.lock().lines() {
         if let Ok(line) = line {
             if line.is_empty() {
                 break;
             }
-            match run(line) {
-                Ok(_) => {}
-                Err(m) => {
-                    m.report("".to_string());
-                }
-            }
+            let _ = run(line);
         } else {
             break;
         }
+        print!("> ");
+        let _ = stdout().flush();
     }
 }
 
