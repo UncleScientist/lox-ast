@@ -2,6 +2,7 @@ use std::env::args;
 use std::io::{self, stdout, BufRead, Write};
 
 mod expr;
+mod interpreter;
 mod object;
 
 mod ast_printer;
