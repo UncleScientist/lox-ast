@@ -1,8 +1,12 @@
 use std::env::args;
 use std::io::{self, stdout, BufRead, Write};
 
+mod ast_printer;
 mod expr;
+use ast_printer::*;
+
 mod parser;
+use parser::*;
 
 mod token;
 mod token_type;
@@ -57,10 +61,14 @@ fn run_prompt() {
 fn run(source: String) -> Result<(), LoxError> {
     let mut scanner = Scanner::new(source);
     let tokens = scanner.scan_tokens()?;
+    let mut parser = Parser::new(tokens);
 
-    for token in tokens {
-        println!("{:?}", token);
+    match parser.parse() {
+        None => {}
+        Some(expr) => {
+            let printer = AstPrinter {};
+            println!("AST Printer:\n{}", printer.print(&expr)?);
+        }
     }
-
     Ok(())
 }

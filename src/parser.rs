@@ -3,14 +3,21 @@ use crate::expr::*;
 use crate::token::*;
 use crate::token_type::*;
 
-pub struct Parser {
-    tokens: Vec<Token>,
+pub struct Parser<'a> {
+    tokens: &'a Vec<Token>,
     current: usize,
 }
 
-impl Parser {
-    pub fn new(tokens: Vec<Token>) -> Parser {
+impl<'a> Parser<'a> {
+    pub fn new(tokens: &Vec<Token>) -> Parser {
         Parser { tokens, current: 0 }
+    }
+
+    pub fn parse(&mut self) -> Option<Expr> {
+        match self.expression() {
+            Ok(expr) => Some(expr),
+            Err(_) => None,
+        }
     }
 
     fn expression(&mut self) -> Result<Expr, LoxError> {
@@ -133,7 +140,7 @@ impl Parser {
             }));
         }
 
-        Err(LoxError::error(0, "failed primary parser".to_string()))
+        Err(LoxError::error(0, "Expect expression.".to_string()))
     }
 
     fn consume(&mut self, ttype: TokenType, message: String) -> Result<Token, LoxError> {
