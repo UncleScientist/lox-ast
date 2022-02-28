@@ -1,21 +1,23 @@
 use std::env::args;
 use std::io::{self, stdout, BufRead, Write};
 
-mod ast_printer;
 mod expr;
+mod object;
+
+mod ast_printer;
 use ast_printer::*;
+
+mod error;
+use error::*;
 
 mod parser;
 use parser::*;
 
-mod token;
-mod token_type;
-
 mod scanner;
 use scanner::*;
 
-mod error;
-use error::*;
+mod token;
+mod token_type;
 
 pub fn main() {
     let args: Vec<String> = args().collect();

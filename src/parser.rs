@@ -1,5 +1,6 @@
 use crate::error::*;
 use crate::expr::*;
+use crate::object::*;
 use crate::token::*;
 use crate::token_type::*;
 

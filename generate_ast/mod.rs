@@ -29,6 +29,7 @@ fn define_ast(output_dir: &String, base_name: &String, types: &[String]) -> io::
 
     write!(file, "{}", "use crate::error::*;\n")?;
     write!(file, "{}", "use crate::token::*;\n")?;
+    write!(file, "{}", "use crate::object::*;\n")?;
 
     for ttype in types {
         let (base_class_name, args) = ttype.split_once(":").unwrap();
