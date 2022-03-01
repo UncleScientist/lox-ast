@@ -35,7 +35,10 @@ impl ExprVisitor<Object> for Interpreter {
         };
 
         if result == Object::ArithmeticError {
-            Err(LoxError::error(expr.operator.line, "Illegal expression"))
+            Err(LoxError::runtime_error(
+                &expr.operator,
+                "Illegal expression",
+            ))
         } else {
             Ok(result)
         }
@@ -181,6 +184,18 @@ mod tests {
         };
         let result = terp.visit_binary_expr(&binary_expr);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_arithmetic_error_for_greater() {
+        let terp = Interpreter {};
+        let binary_expr = BinaryExpr {
+            left: make_literal(Object::Num(15.0)),
+            operator: Token::new(TokenType::Greater, ">".to_string(), None, 123),
+            right: make_literal(Object::Bool(true)),
+        };
+        let result = terp.visit_binary_expr(&binary_expr);
+        assert!(result.is_ok());
     }
 
     #[test]
