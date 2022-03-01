@@ -4,9 +4,8 @@ use std::fmt;
 pub enum Object {
     Num(f64),
     Str(String),
+    Bool(bool),
     Nil,
-    True,
-    False,
 }
 
 impl fmt::Display for Object {
@@ -14,9 +13,14 @@ impl fmt::Display for Object {
         match self {
             Object::Num(x) => write!(f, "{x}"),
             Object::Str(x) => write!(f, "\"{x}\""),
+            Object::Bool(x) => {
+                if *x {
+                    write!(f, "true")
+                } else {
+                    write!(f, "false")
+                }
+            }
             Object::Nil => write!(f, "nil"),
-            Object::True => write!(f, "true"),
-            Object::False => write!(f, "false"),
         }
     }
 }

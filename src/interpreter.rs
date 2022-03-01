@@ -26,13 +26,7 @@ impl ExprVisitor<Object> for Interpreter {
                 Object::Num(n) => return Ok(Object::Num(-n)),
                 _ => return Ok(Object::Nil),
             },
-            TokenType::Bang => {
-                if self.is_truthy(&right) {
-                    Ok(Object::False)
-                } else {
-                    Ok(Object::True)
-                }
-            }
+            TokenType::Bang => Ok(Object::Bool(!self.is_truthy(&right))),
             _ => Err(LoxError::error(0, "Unreachable accordin to Nystrom")),
         }
     }
@@ -45,6 +39,6 @@ impl Interpreter {
 
     // Anything that is not Nil or False is true
     fn is_truthy(&self, object: &Object) -> bool {
-        !matches!(object, Object::Nil | Object::False)
+        !matches!(object, Object::Nil | Object::Bool(false))
     }
 }
