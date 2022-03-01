@@ -33,10 +33,7 @@ impl ExprVisitor<Object> for Interpreter {
                     Ok(Object::True)
                 }
             }
-            _ => Err(LoxError::error(
-                0,
-                "Unreachable accordin to Nystrom".to_string(),
-            )),
+            _ => Err(LoxError::error(0, "Unreachable accordin to Nystrom")),
         }
     }
 }

@@ -30,7 +30,7 @@ impl Scanner {
             match self.scan_token() {
                 Ok(_) => {}
                 Err(e) => {
-                    e.report("".to_string());
+                    e.report("");
                     had_error = Some(e);
                 }
             }
@@ -125,10 +125,7 @@ impl Scanner {
                 self.identifier();
             }
             _ => {
-                return Err(LoxError::error(
-                    self.line,
-                    "Unexpected character".to_string(),
-                ));
+                return Err(LoxError::error(self.line, "Unexpected character"));
             }
         }
 
@@ -155,10 +152,7 @@ impl Scanner {
                     self.line += 1;
                 }
                 None => {
-                    return Err(LoxError::error(
-                        self.line,
-                        "Unterminated comment".to_string(),
-                    ));
+                    return Err(LoxError::error(self.line, "Unterminated comment"));
                 }
                 _ => {
                     self.advance();
@@ -229,10 +223,7 @@ impl Scanner {
         }
 
         if self.is_at_end() {
-            return Err(LoxError::error(
-                self.line,
-                "Unterminated string.".to_string(),
-            ));
+            return Err(LoxError::error(self.line, "Unterminated string."));
         }
 
         self.advance();
