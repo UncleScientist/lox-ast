@@ -2,6 +2,8 @@ use std::env::args;
 use std::io::{self, stdout, BufRead, Write};
 
 mod expr;
+mod stmt;
+
 mod object;
 
 // mod ast_printer;
@@ -79,15 +81,12 @@ impl Lox {
         let mut scanner = Scanner::new(source);
         let tokens = scanner.scan_tokens()?;
         let mut parser = Parser::new(tokens);
+        let statements = parser.parse()?;
 
-        match parser.parse() {
-            None => {}
-            Some(expr) => {
-                self.interpreter.interpret(&expr);
-                // let printer = AstPrinter {};
-                // println!("AST Printer:\n{}", printer.print(&expr)?);
-            }
+        if self.interpreter.interpret(&statements) {
+            Ok(())
+        } else {
+            Err(LoxError::error(0, ""))
         }
-        Ok(())
     }
 }

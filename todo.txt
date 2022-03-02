@@ -1,0 +1,2 @@
+ - convert different error types (runtime, parsing, scanning, cmdline) into their own
+   error codes
