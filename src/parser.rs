@@ -18,13 +18,27 @@ impl<'a> Parser<'a> {
     pub fn parse(&mut self) -> Result<Vec<Stmt>, LoxError> {
         let mut statements = Vec::new();
         while !self.is_at_end() {
-            statements.push(self.statement()?)
+            statements.push(self.declaration()?)
         }
         Ok(statements)
     }
 
     fn expression(&mut self) -> Result<Expr, LoxError> {
         self.equality()
+    }
+
+    fn declaration(&mut self) -> Result<Stmt, LoxError> {
+        let result = if self.is_match(&[TokenType::Var]) {
+            self.var_declaration()
+        } else {
+            self.statement()
+        };
+
+        if result.is_err() {
+            self.synchronize();
+        }
+
+        result
     }
 
     fn statement(&mut self) -> Result<Stmt, LoxError> {
@@ -39,6 +53,23 @@ impl<'a> Parser<'a> {
         let value = self.expression()?;
         self.consume(TokenType::SemiColon, "Expect ';' after value.")?;
         Ok(Stmt::Print(PrintStmt { expression: value }))
+    }
+
+    fn var_declaration(&mut self) -> Result<Stmt, LoxError> {
+        let name = self.consume(TokenType::Identifier, "Expect variable name.")?;
+
+        let initializer = if self.is_match(&[TokenType::Assign]) {
+            Some(self.expression()?)
+        } else {
+            None
+        };
+
+        self.consume(
+            TokenType::SemiColon,
+            "Expect ';' after variable declaration.",
+        )?;
+
+        Ok(Stmt::Var(VarStmt { name, initializer }))
     }
 
     fn expression_statement(&mut self) -> Result<Stmt, LoxError> {
@@ -149,6 +180,12 @@ impl<'a> Parser<'a> {
         if self.is_match(&[TokenType::Number, TokenType::String]) {
             return Ok(Expr::Literal(LiteralExpr {
                 value: self.previous().literal.clone(),
+            }));
+        }
+
+        if self.is_match(&[TokenType::Identifier]) {
+            return Ok(Expr::Variable(VariableExpr {
+                name: self.previous().dup(),
             }));
         }
 

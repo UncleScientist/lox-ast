@@ -17,6 +17,10 @@ impl StmtVisitor<()> for Interpreter {
         println!("{value}");
         Ok(())
     }
+
+    fn visit_var_stmt(&self, _stmt: &VarStmt) -> Result<(), LoxError> {
+        Ok(())
+    }
 }
 
 impl ExprVisitor<Object> for Interpreter {
@@ -105,6 +109,10 @@ impl ExprVisitor<Object> for Interpreter {
                 "Unreachable according to Nystrom",
             )),
         }
+    }
+
+    fn visit_variable_expr(&self, _expr: &VariableExpr) -> Result<Object, LoxError> {
+        Ok(Object::Nil)
     }
 }
 
