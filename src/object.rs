@@ -14,7 +14,7 @@ impl fmt::Display for Object {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Object::Num(x) => write!(f, "{x}"),
-            Object::Str(x) => write!(f, "\"{x}\""),
+            Object::Str(x) => write!(f, "{x}"),
             Object::Bool(x) => {
                 if *x {
                     write!(f, "true")
