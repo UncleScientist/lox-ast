@@ -8,37 +8,37 @@ struct TreeType {
     fields: Vec<String>,
 }
 
-pub fn generate_ast(output_dir: &String) -> io::Result<()> {
+pub fn generate_ast(output_dir: &str) -> io::Result<()> {
     define_ast(
         output_dir,
-        &"Expr".to_string(),
-        &vec!["error", "token", "object"],
-        &vec![
-            "Binary   : Box<Expr> left, Token operator, Box<Expr> right".to_string(),
-            "Grouping : Box<Expr> expression".to_string(),
-            "Literal  : Option<Object> value".to_string(),
-            "Unary    : Token operator, Box<Expr> right".to_string(),
-            "Variable : Token name".to_string(),
+        "Expr",
+        &["error", "token", "object"],
+        &[
+            "Binary   : Box<Expr> left, Token operator, Box<Expr> right",
+            "Grouping : Box<Expr> expression",
+            "Literal  : Option<Object> value",
+            "Unary    : Token operator, Box<Expr> right",
+            "Variable : Token name",
         ],
     )?;
     define_ast(
         output_dir,
-        &"Stmt".to_string(),
-        &vec!["error", "expr", "token"],
-        &vec![
-            "Expression : Expr expression".to_string(),
-            "Print      : Expr expression".to_string(),
-            "Var        : Token name, Option<Expr> initializer".to_string(),
+        "Stmt",
+        &["error", "expr", "token"],
+        &[
+            "Expression : Expr expression",
+            "Print      : Expr expression",
+            "Var        : Token name, Option<Expr> initializer",
         ],
     )?;
     Ok(())
 }
 
 fn define_ast(
-    output_dir: &String,
-    base_name: &String,
+    output_dir: &str,
+    base_name: &str,
     imports: &[&str],
-    types: &[String],
+    types: &[&str],
 ) -> io::Result<()> {
     let path = format!("{output_dir}/{}.rs", base_name.to_lowercase());
     let mut file = File::create(path)?;
@@ -51,7 +51,7 @@ fn define_ast(
     for ttype in types {
         let (base_class_name, args) = ttype.split_once(":").unwrap();
         let class_name = format!("{}{}", base_class_name.trim(), base_name); // Binary + Expr
-        let arg_split = args.split(",");
+        let arg_split = args.split(',');
         let mut fields = Vec::new();
         for arg in arg_split {
             let (t2type, name) = arg.trim().split_once(" ").unwrap();
@@ -64,63 +64,63 @@ fn define_ast(
         });
     }
 
-    write!(file, "\npub enum {base_name} {{\n")?;
+    writeln!(file, "\npub enum {base_name} {{")?;
     for t in &tree_types {
-        write!(file, "    {}({}),\n", t.base_class_name, t.class_name)?;
+        writeln!(file, "    {}({}),", t.base_class_name, t.class_name)?;
     }
-    write!(file, "}}\n\n")?;
+    writeln!(file, "}}\n")?;
 
-    write!(file, "impl {} {{\n", base_name)?;
-    write!(file, "    pub fn accept<T>(&self, {}_visitor: &dyn {base_name}Visitor<T>) -> Result<T, LoxError> {{\n", base_name.to_lowercase())?;
-    write!(file, "        match self {{\n")?;
+    writeln!(file, "impl {} {{", base_name)?;
+    writeln!(file, "    pub fn accept<T>(&self, {}_visitor: &dyn {base_name}Visitor<T>) -> Result<T, LoxError> {{", base_name.to_lowercase())?;
+    writeln!(file, "        match self {{")?;
     for t in &tree_types {
-        write!(
+        writeln!(
             file,
-            "            {}::{}(v) => v.accept({}_visitor),\n",
+            "            {}::{}(v) => v.accept({}_visitor),",
             base_name,
             t.base_class_name,
             base_name.to_lowercase()
         )?;
     }
-    write!(file, "        }}\n")?;
-    write!(file, "    }}\n")?;
-    write!(file, "}}\n\n")?;
+    writeln!(file, "        }}")?;
+    writeln!(file, "    }}")?;
+    writeln!(file, "}}\n")?;
 
     for t in &tree_types {
-        write!(file, "pub struct {} {{\n", t.class_name)?;
+        writeln!(file, "pub struct {} {{", t.class_name)?;
         for f in &t.fields {
-            write!(file, "    pub {},\n", f)?;
+            writeln!(file, "    pub {},", f)?;
         }
-        write!(file, "}}\n\n")?;
+        writeln!(file, "}}\n")?;
     }
 
-    write!(file, "pub trait {}Visitor<T> {{\n", base_name)?;
+    writeln!(file, "pub trait {}Visitor<T> {{", base_name)?;
     for t in &tree_types {
-        write!(
+        writeln!(
             file,
-            "    fn visit_{}_{}(&self, expr: &{}) -> Result<T, LoxError>;\n",
+            "    fn visit_{}_{}(&self, expr: &{}) -> Result<T, LoxError>;",
             t.base_class_name.to_lowercase(),
             base_name.to_lowercase(),
             t.class_name
         )?;
     }
-    write!(file, "}}\n\n")?;
+    writeln!(file, "}}\n")?;
 
     for t in &tree_types {
-        write!(file, "impl {} {{\n", t.class_name)?;
-        write!(
+        writeln!(file, "impl {} {{", t.class_name)?;
+        writeln!(
             file,
-            "    pub fn accept<T>(&self, visitor: &dyn {}Visitor<T>) -> Result<T, LoxError> {{\n",
+            "    pub fn accept<T>(&self, visitor: &dyn {}Visitor<T>) -> Result<T, LoxError> {{",
             base_name
         )?;
-        write!(
+        writeln!(
             file,
-            "        visitor.visit_{}_{}(self)\n",
+            "        visitor.visit_{}_{}(self)",
             t.base_class_name.to_lowercase(),
             base_name.to_lowercase()
         )?;
-        write!(file, "    }}\n")?;
-        write!(file, "}}\n\n")?;
+        writeln!(file, "    }}")?;
+        writeln!(file, "}}\n")?;
     }
     Ok(())
 }

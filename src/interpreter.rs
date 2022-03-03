@@ -29,7 +29,7 @@ impl ExprVisitor<Object> for Interpreter {
     }
 
     fn visit_grouping_expr(&self, expr: &GroupingExpr) -> Result<Object, LoxError> {
-        Ok(self.evaluate(&expr.expression)?)
+        self.evaluate(&expr.expression)
     }
 
     fn visit_binary_expr(&self, expr: &BinaryExpr) -> Result<Object, LoxError> {
@@ -100,8 +100,8 @@ impl ExprVisitor<Object> for Interpreter {
 
         match expr.operator.token_type() {
             TokenType::Minus => match right {
-                Object::Num(n) => return Ok(Object::Num(-n)),
-                _ => return Ok(Object::Nil),
+                Object::Num(n) => Ok(Object::Num(-n)),
+                _ => Ok(Object::Nil),
             },
             TokenType::Bang => Ok(Object::Bool(!self.is_truthy(&right))),
             _ => Err(LoxError::error(
