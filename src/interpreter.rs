@@ -25,7 +25,7 @@ impl StmtVisitor<()> for Interpreter {
 
     fn visit_var_stmt(&self, stmt: &VarStmt) -> Result<(), LoxError> {
         let value = if let Some(initializer) = &stmt.initializer {
-            self.evaluate(&initializer)?
+            self.evaluate(initializer)?
         } else {
             Object::Nil
         };
@@ -38,6 +38,14 @@ impl StmtVisitor<()> for Interpreter {
 }
 
 impl ExprVisitor<Object> for Interpreter {
+    fn visit_assign_expr(&self, expr: &AssignExpr) -> Result<Object, LoxError> {
+        let value = self.evaluate(&expr.value)?;
+        self.environment
+            .borrow_mut()
+            .assign(&expr.name, value.clone())?;
+        Ok(value)
+    }
+
     fn visit_literal_expr(&self, expr: &LiteralExpr) -> Result<Object, LoxError> {
         Ok(expr.value.clone().unwrap())
     }
