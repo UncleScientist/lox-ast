@@ -161,8 +161,7 @@ impl Interpreter {
     pub fn interpret(&self, statements: &[Stmt]) -> bool {
         let mut success = true;
         for statement in statements {
-            if let Err(e) = self.execute(statement) {
-                e.report("");
+            if self.execute(statement).is_err() {
                 success = false;
                 break;
             }
