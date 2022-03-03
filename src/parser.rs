@@ -8,11 +8,16 @@ use crate::token_type::*;
 pub struct Parser<'a> {
     tokens: &'a [Token],
     current: usize,
+    had_error: bool,
 }
 
 impl<'a> Parser<'a> {
     pub fn new(tokens: &[Token]) -> Parser {
-        Parser { tokens, current: 0 }
+        Parser {
+            tokens,
+            current: 0,
+            had_error: false,
+        }
     }
 
     pub fn parse(&mut self) -> Result<Vec<Stmt>, LoxError> {
@@ -21,6 +26,10 @@ impl<'a> Parser<'a> {
             statements.push(self.declaration()?)
         }
         Ok(statements)
+    }
+
+    pub fn success(&self) -> bool {
+        !self.had_error
     }
 
     fn expression(&mut self) -> Result<Expr, LoxError> {
@@ -204,11 +213,13 @@ impl<'a> Parser<'a> {
         if self.check(ttype) {
             Ok(self.advance().dup())
         } else {
-            Err(Parser::error(self.peek(), message))
+            let peek = self.peek().dup();
+            Err(self.error(&peek, message))
         }
     }
 
-    fn error(token: &Token, message: &str) -> LoxError {
+    fn error(&mut self, token: &Token, message: &str) -> LoxError {
+        self.had_error = true;
         LoxError::parse_error(token, message)
     }
 
