@@ -1,10 +1,10 @@
 use std::env::args;
 use std::io::{self, stdout, BufRead, Write};
 
+mod environment;
 mod expr;
-mod stmt;
-
 mod object;
+mod stmt;
 
 // mod ast_printer;
 // use ast_printer::*;
@@ -45,7 +45,7 @@ struct Lox {
 impl Lox {
     pub fn new() -> Lox {
         Lox {
-            interpreter: Interpreter {},
+            interpreter: Interpreter::new(),
         }
     }
 
