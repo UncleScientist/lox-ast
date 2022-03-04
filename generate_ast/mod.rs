@@ -27,6 +27,7 @@ pub fn generate_ast(output_dir: &str) -> io::Result<()> {
         "Stmt",
         &["error", "expr", "token"],
         &[
+            "Block      : Vec<Stmt> statements",
             "Expression : Expr expression",
             "Print      : Expr expression",
             "Var        : Token name, Option<Expr> initializer",
