@@ -51,6 +51,10 @@ impl<'a> Parser<'a> {
     }
 
     fn statement(&mut self) -> Result<Stmt, LoxError> {
+        if self.is_match(&[TokenType::If]) {
+            return self.if_statement();
+        }
+
         if self.is_match(&[TokenType::Print]) {
             return self.print_statement();
         }
@@ -62,6 +66,25 @@ impl<'a> Parser<'a> {
         }
 
         self.expression_statement()
+    }
+
+    fn if_statement(&mut self) -> Result<Stmt, LoxError> {
+        self.consume(TokenType::LeftParen, "Expect '(' after 'if'.")?;
+        let condition = self.expression()?;
+        self.consume(TokenType::RightParen, "Expect ')' after 'if'.")?;
+
+        let then_branch = Box::new(self.statement()?);
+        let else_branch = if self.is_match(&[TokenType::Else]) {
+            Some(Box::new(self.statement()?))
+        } else {
+            None
+        };
+
+        Ok(Stmt::If(IfStmt {
+            condition,
+            then_branch,
+            else_branch,
+        }))
     }
 
     fn print_statement(&mut self) -> Result<Stmt, LoxError> {

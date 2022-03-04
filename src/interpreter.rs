@@ -13,6 +13,16 @@ pub struct Interpreter {
 }
 
 impl StmtVisitor<()> for Interpreter {
+    fn visit_if_stmt(&self, stmt: &IfStmt) -> Result<(), LoxError> {
+        if self.is_truthy(&self.evaluate(&stmt.condition)?) {
+            self.execute(&stmt.then_branch)
+        } else if let Some(else_branch) = &stmt.else_branch {
+            self.execute(else_branch)
+        } else {
+            Ok(())
+        }
+    }
+
     fn visit_block_stmt(&self, stmt: &BlockStmt) -> Result<(), LoxError> {
         let e = Environment::new_with_enclosing(self.environment.borrow().clone());
         self.execute_block(&stmt.statements, e)
