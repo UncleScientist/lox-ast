@@ -5,6 +5,7 @@ use crate::error::*;
 use crate::object::*;
 use crate::token::*;
 
+#[derive(Debug)]
 pub struct Environment {
     values: HashMap<String, Object>,
 }
