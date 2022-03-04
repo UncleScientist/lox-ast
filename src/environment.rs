@@ -1,5 +1,7 @@
+use std::cell::RefCell;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
+use std::rc::Rc;
 
 use crate::error::*;
 use crate::object::*;
@@ -8,12 +10,21 @@ use crate::token::*;
 #[derive(Debug)]
 pub struct Environment {
     values: HashMap<String, Object>,
+    enclosing: Option<Rc<RefCell<Environment>>>,
 }
 
 impl Environment {
     pub fn new() -> Environment {
         Environment {
             values: HashMap::new(),
+            enclosing: None,
+        }
+    }
+
+    pub fn new_with_enclosing(enclosing: Rc<RefCell<Environment>>) -> Environment {
+        Environment {
+            values: HashMap::new(),
+            enclosing: Some(enclosing),
         }
     }
 
@@ -24,6 +35,8 @@ impl Environment {
     pub fn get(&self, name: &Token) -> Result<Object, LoxError> {
         if let Some(object) = self.values.get(name.as_string()) {
             Ok(object.clone())
+        } else if let Some(enclosing) = &self.enclosing {
+            enclosing.borrow().get(name)
         } else {
             Err(LoxError::runtime_error(
                 name,
@@ -36,6 +49,8 @@ impl Environment {
         if let Entry::Occupied(mut object) = self.values.entry(name.as_string().to_string()) {
             object.insert(value);
             Ok(())
+        } else if let Some(enclosing) = &self.enclosing {
+            enclosing.borrow_mut().assign(name, value)
         } else {
             Err(LoxError::runtime_error(
                 name,
@@ -104,5 +119,35 @@ mod tests {
         e.define(&"Four".to_string(), Object::Num(73.1));
         assert!(e.assign(&four_tok, Object::Num(89.5)).is_ok());
         assert_eq!(e.get(&four_tok).unwrap(), Object::Num(89.5));
+    }
+
+    #[test]
+    fn can_enclose_an_environment() {
+        let e = Rc::new(RefCell::new(Environment::new()));
+        let f = Environment::new_with_enclosing(Rc::clone(&e));
+        assert_eq!(f.enclosing.unwrap().borrow().values, e.borrow().values);
+    }
+
+    #[test]
+    fn can_read_from_enclosed_environment() {
+        let e = Rc::new(RefCell::new(Environment::new()));
+        e.borrow_mut()
+            .define(&"Five".to_string(), Object::Num(77.8));
+
+        let f = Environment::new_with_enclosing(Rc::clone(&e));
+        let five_tok = Token::new(TokenType::Identifier, "Five".to_string(), None, 0);
+        assert_eq!(f.get(&five_tok).unwrap(), Object::Num(77.8));
+    }
+
+    #[test]
+    fn can_assign_to_enclosed_environment() {
+        let e = Rc::new(RefCell::new(Environment::new()));
+        e.borrow_mut()
+            .define(&"Five".to_string(), Object::Num(77.8));
+
+        let mut f = Environment::new_with_enclosing(Rc::clone(&e));
+        let five_tok = Token::new(TokenType::Identifier, "Five".to_string(), None, 0);
+        assert!(f.assign(&five_tok, Object::Num(91.2)).is_ok());
+        assert_eq!(f.get(&five_tok).unwrap(), Object::Num(91.2));
     }
 }
