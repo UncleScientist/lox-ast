@@ -6,6 +6,7 @@ pub enum Object {
     Num(f64),
     Str(String),
     Bool(bool),
+    Func(Callable),
     Nil,
     ArithmeticError,
 }
@@ -22,8 +23,23 @@ impl fmt::Display for Object {
                     write!(f, "false")
                 }
             }
+            Object::Func(_) => write!(f, "<func>"),
             Object::Nil => write!(f, "nil"),
             Object::ArithmeticError => panic!("Should not be trying to print this"),
         }
+    }
+}
+
+// --------------------------------------------------------------------------------
+
+use crate::error::*;
+use crate::interpreter::*;
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Callable;
+
+impl Callable {
+    pub fn call(&self, _terp: &Interpreter, _arguments: Vec<Object>) -> Result<Object, LoxResult> {
+        Ok(Object::Nil)
     }
 }
