@@ -77,7 +77,7 @@ impl Lox {
         }
     }
 
-    fn run(&self, source: String) -> Result<(), LoxError> {
+    fn run(&self, source: String) -> Result<(), LoxResult> {
         if source == "@" {
             self.interpreter.print_environment();
             return Ok(());
