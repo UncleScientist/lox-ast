@@ -90,7 +90,17 @@ impl ExprVisitor<Object> for Interpreter {
         }
 
         if let Object::Func(function) = callee {
-            function.call(self, arguments)
+            if arguments.len() != function.func.arity() {
+                return Err(LoxResult::runtime_error(
+                    &expr.paren,
+                    &format!(
+                        "Expected {} arguments but got {}.",
+                        function.func.arity(),
+                        arguments.len()
+                    ),
+                ));
+            }
+            function.func.call(self, arguments)
         } else {
             Err(LoxResult::runtime_error(
                 &expr.paren,

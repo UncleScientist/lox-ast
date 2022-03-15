@@ -1,6 +1,8 @@
 use std::cmp::*;
 use std::fmt;
 
+use crate::callable::*;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Object {
     Num(f64),
@@ -27,19 +29,5 @@ impl fmt::Display for Object {
             Object::Nil => write!(f, "nil"),
             Object::ArithmeticError => panic!("Should not be trying to print this"),
         }
-    }
-}
-
-// --------------------------------------------------------------------------------
-
-use crate::error::*;
-use crate::interpreter::*;
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct Callable;
-
-impl Callable {
-    pub fn call(&self, _terp: &Interpreter, _arguments: Vec<Object>) -> Result<Object, LoxResult> {
-        Ok(Object::Nil)
     }
 }

@@ -1,6 +1,7 @@
 use std::env::args;
 use std::io::{self, stdout, BufRead, Write};
 
+mod callable;
 mod environment;
 mod expr;
 mod object;
