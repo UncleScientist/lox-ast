@@ -5,19 +5,27 @@ use crate::callable::*;
 use crate::environment::*;
 use crate::error::*;
 use crate::expr::*;
+use crate::lox_function::*;
 use crate::native_functions::*;
 use crate::object::*;
 use crate::stmt::*;
 use crate::token_type::*;
 
 pub struct Interpreter {
-    globals: Rc<RefCell<Environment>>,
+    pub globals: Rc<RefCell<Environment>>,
     environment: RefCell<Rc<RefCell<Environment>>>,
     nest: RefCell<usize>,
 }
 
 impl StmtVisitor<()> for Interpreter {
-    fn visit_function_stmt(&self, _stmt: &FunctionStmt) -> Result<(), LoxResult> {
+    fn visit_function_stmt(&self, stmt: &FunctionStmt) -> Result<(), LoxResult> {
+        let function = LoxFunction::new(&Rc::new(stmt)); // TODO!
+        self.environment.borrow().borrow_mut().define(
+            stmt.name.as_string(),
+            Object::Func(Callable {
+                func: Rc::new(function),
+            }),
+        );
         Ok(())
     }
 
@@ -257,7 +265,7 @@ impl Interpreter {
         stmt.accept(self)
     }
 
-    fn execute_block(
+    pub fn execute_block(
         &self,
         statements: &[Stmt],
         environment: Environment,

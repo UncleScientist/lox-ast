@@ -1,4 +1,4 @@
-use core::fmt::Debug;
+use core::fmt::{Debug, Display};
 
 use std::fmt;
 use std::rc::Rc;
@@ -14,7 +14,13 @@ pub struct Callable {
 
 impl Debug for Callable {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "<callable>")
+        write!(f, "{}", LoxCallable::to_string(self))
+    }
+}
+
+impl Display for Callable {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", LoxCallable::to_string(self))
     }
 }
 
@@ -27,6 +33,7 @@ impl PartialEq for Callable {
 pub trait LoxCallable {
     fn call(&self, interpreter: &Interpreter, arguments: Vec<Object>) -> Result<Object, LoxResult>;
     fn arity(&self) -> usize;
+    fn to_string(&self) -> String;
 }
 
 impl LoxCallable for Callable {
@@ -36,5 +43,9 @@ impl LoxCallable for Callable {
 
     fn arity(&self) -> usize {
         self.func.arity()
+    }
+
+    fn to_string(&self) -> String {
+        self.func.to_string()
     }
 }

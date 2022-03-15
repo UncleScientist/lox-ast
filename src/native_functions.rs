@@ -21,4 +21,8 @@ impl LoxCallable for NativeClock {
     fn arity(&self) -> usize {
         0
     }
+
+    fn to_string(&self) -> String {
+        "Native:Clock".to_string()
+    }
 }
