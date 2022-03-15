@@ -43,7 +43,7 @@ impl LoxResult {
                 if token.is(TokenType::Eof) {
                     eprintln!("{} at end {}", token.line, message);
                 } else {
-                    eprintln!("{} at '{}' {}", token.line, token.as_string(), message);
+                    eprintln!("line {} at '{}' {}", token.line, token.as_string(), message);
                 }
             }
             LoxResult::Error { line, message } => {
