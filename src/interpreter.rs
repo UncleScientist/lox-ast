@@ -17,6 +17,10 @@ pub struct Interpreter {
 }
 
 impl StmtVisitor<()> for Interpreter {
+    fn visit_function_stmt(&self, _stmt: &FunctionStmt) -> Result<(), LoxResult> {
+        Ok(())
+    }
+
     fn visit_break_stmt(&self, stmt: &BreakStmt) -> Result<(), LoxResult> {
         if *self.nest.borrow() == 0 {
             Err(LoxResult::runtime_error(
