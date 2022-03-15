@@ -4,6 +4,7 @@ use std::io::{self, stdout, BufRead, Write};
 mod callable;
 mod environment;
 mod expr;
+mod native_functions;
 mod object;
 mod stmt;
 

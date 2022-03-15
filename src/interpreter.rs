@@ -1,14 +1,17 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use crate::callable::*;
 use crate::environment::*;
 use crate::error::*;
 use crate::expr::*;
+use crate::native_functions::*;
 use crate::object::*;
 use crate::stmt::*;
 use crate::token_type::*;
 
 pub struct Interpreter {
+    globals: Rc<RefCell<Environment>>,
     environment: RefCell<Rc<RefCell<Environment>>>,
     nest: RefCell<usize>,
 }
@@ -226,8 +229,18 @@ impl ExprVisitor<Object> for Interpreter {
 
 impl Interpreter {
     pub fn new() -> Interpreter {
+        let globals = Rc::new(RefCell::new(Environment::new()));
+
+        globals.borrow_mut().define(
+            "clock",
+            Object::Func(Callable {
+                func: Rc::new(NativeClock {}),
+            }),
+        );
+
         Interpreter {
-            environment: RefCell::new(Rc::new(RefCell::new(Environment::new()))),
+            globals: Rc::clone(&globals),
+            environment: RefCell::new(Rc::clone(&globals)),
             nest: RefCell::new(0),
         }
     }

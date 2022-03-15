@@ -10,7 +10,6 @@ use crate::object::*;
 #[derive(Clone)]
 pub struct Callable {
     pub func: Rc<dyn LoxCallable>,
-    arity: usize,
 }
 
 impl Debug for Callable {
@@ -36,6 +35,6 @@ impl LoxCallable for Callable {
     }
 
     fn arity(&self) -> usize {
-        self.arity
+        self.func.arity()
     }
 }
