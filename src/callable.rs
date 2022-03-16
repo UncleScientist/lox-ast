@@ -26,7 +26,10 @@ impl Display for Callable {
 
 impl PartialEq for Callable {
     fn eq(&self, other: &Self) -> bool {
-        Rc::ptr_eq(&self.func, &other.func)
+        std::ptr::eq(
+            Rc::as_ptr(&self.func) as *const (),
+            Rc::as_ptr(&other.func) as *const (),
+        )
     }
 }
 
