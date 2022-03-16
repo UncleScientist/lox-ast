@@ -226,9 +226,13 @@ impl<'a> Parser<'a> {
             TokenType::LeftBrace,
             &format!("Expect '{{' before {kind} body."),
         )?;
-        let body = self.block()?;
+        let body = Rc::new(self.block()?);
 
-        Ok(Stmt::Function(FunctionStmt { name, params, body }))
+        Ok(Stmt::Function(FunctionStmt {
+            name,
+            params: Rc::new(params),
+            body,
+        }))
     }
 
     fn block(&mut self) -> Result<Vec<Stmt>, LoxResult> {

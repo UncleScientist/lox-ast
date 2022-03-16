@@ -27,12 +27,12 @@ pub fn generate_ast(output_dir: &str) -> io::Result<()> {
     define_ast(
         output_dir,
         "Stmt",
-        &["error", "expr", "token"],
+        &["error", "expr", "token", "rc"],
         &[
             "Block      : Vec<Stmt> statements",
             "Break      : Token token",
             "Expression : Expr expression",
-            "Function   : Token name, Vec<Token> params, Vec<Stmt> body",
+            "Function   : Token name, Rc<Vec<Token>> params, Rc<Vec<Stmt>> body",
             "If         : Expr condition, Box<Stmt> then_branch, Option<Box<Stmt>> else_branch",
             "Print      : Expr expression",
             "Var        : Token name, Option<Expr> initializer",

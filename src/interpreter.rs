@@ -19,7 +19,7 @@ pub struct Interpreter {
 
 impl StmtVisitor<()> for Interpreter {
     fn visit_function_stmt(&self, stmt: &FunctionStmt) -> Result<(), LoxResult> {
-        let function = LoxFunction::new(&Rc::new(stmt)); // TODO!
+        let function = LoxFunction::new(stmt);
         self.environment.borrow().borrow_mut().define(
             stmt.name.as_string(),
             Object::Func(Callable {
