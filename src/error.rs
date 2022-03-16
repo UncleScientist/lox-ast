@@ -1,3 +1,4 @@
+use crate::object::*;
 use crate::token::*;
 use crate::token_type::*;
 
@@ -6,10 +7,15 @@ pub enum LoxResult {
     RuntimeError { token: Token, message: String },
     Error { line: usize, message: String },
     SystemError { message: String },
+    ReturnValue { value: Object },
     Break,
 }
 
 impl LoxResult {
+    pub fn return_value(value: Object) -> LoxResult {
+        LoxResult::ReturnValue { value }
+    }
+
     pub fn error(line: usize, message: &str) -> LoxResult {
         let err = LoxResult::Error {
             line,
@@ -61,7 +67,7 @@ impl LoxResult {
             LoxResult::SystemError { message } => {
                 eprintln!("System Error: {message}");
             }
-            LoxResult::Break => {}
+            LoxResult::Break | LoxResult::ReturnValue { .. } => {}
         };
     }
 }
