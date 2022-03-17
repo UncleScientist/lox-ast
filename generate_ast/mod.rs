@@ -14,13 +14,13 @@ pub fn generate_ast(output_dir: &str) -> io::Result<()> {
         "Expr",
         &["error", "token", "object", "rc"],
         &[
-            "Assign   : Token name, Box<Expr> value",
-            "Binary   : Box<Expr> left, Token operator, Box<Expr> right",
-            "Call     : Rc<Expr> callee, Token paren, Vec<Expr> arguments",
-            "Grouping : Box<Expr> expression",
+            "Assign   : Token name, Rc<Expr> value",
+            "Binary   : Rc<Expr> left, Token operator, Rc<Expr> right",
+            "Call     : Rc<Expr> callee, Token paren, Vec<Rc<Expr>> arguments",
+            "Grouping : Rc<Expr> expression",
             "Literal  : Option<Object> value",
-            "Logical  : Box<Expr> left, Token operator, Box<Expr> right",
-            "Unary    : Token operator, Box<Expr> right",
+            "Logical  : Rc<Expr> left, Token operator, Rc<Expr> right",
+            "Unary    : Token operator, Rc<Expr> right",
             "Variable : Token name",
         ],
     )?;
@@ -29,15 +29,15 @@ pub fn generate_ast(output_dir: &str) -> io::Result<()> {
         "Stmt",
         &["error", "expr", "token", "rc"],
         &[
-            "Block      : Vec<Stmt> statements",
+            "Block      : Rc<Vec<Rc<Stmt>>> statements",
             "Break      : Token token",
-            "Expression : Expr expression",
-            "Function   : Token name, Rc<Vec<Token>> params, Rc<Vec<Stmt>> body",
-            "If         : Expr condition, Box<Stmt> then_branch, Option<Box<Stmt>> else_branch",
-            "Print      : Expr expression",
-            "Return     : Token keyword, Option<Expr> value",
-            "Var        : Token name, Option<Expr> initializer",
-            "While      : Expr condition, Box<Stmt> body",
+            "Expression : Rc<Expr> expression",
+            "Function   : Token name, Rc<Vec<Token>> params, Rc<Vec<Rc<Stmt>>> body",
+            "If         : Rc<Expr> condition, Rc<Stmt> then_branch, Option<Rc<Stmt>> else_branch",
+            "Print      : Rc<Expr> expression",
+            "Return     : Token keyword, Option<Rc<Expr>> value",
+            "Var        : Token name, Option<Rc<Expr>> initializer",
+            "While      : Rc<Expr> condition, Rc<Stmt> body",
         ],
     )?;
     Ok(())
@@ -84,15 +84,16 @@ fn define_ast(
     writeln!(file, "}}\n")?;
 
     writeln!(file, "impl {} {{", base_name)?;
-    writeln!(file, "    pub fn accept<T>(&self, {}_visitor: &dyn {base_name}Visitor<T>) -> Result<T, LoxResult> {{", base_name.to_lowercase())?;
+    writeln!(file, "    pub fn accept<T>(&self, wrapper: &Rc<{}>, {}_visitor: &dyn {base_name}Visitor<T>) -> Result<T, LoxResult> {{", base_name, base_name.to_lowercase())?;
     writeln!(file, "        match self {{")?;
     for t in &tree_types {
         writeln!(
             file,
-            "            {}::{}(v) => v.accept({}_visitor),",
+            "            {0}::{1}(v) => {3}_visitor.visit_{2}_{3}(wrapper, &v),",
             base_name,
             t.base_class_name,
-            base_name.to_lowercase()
+            t.base_class_name.to_lowercase(),
+            base_name.to_lowercase(),
         )?;
     }
     writeln!(file, "        }}")?;
@@ -111,14 +112,16 @@ fn define_ast(
     for t in &tree_types {
         writeln!(
             file,
-            "    fn visit_{}_{}(&self, expr: &{}) -> Result<T, LoxResult>;",
+            "    fn visit_{0}_{1}(&self, wrapper: &Rc<{3}>, {1}: &{2}) -> Result<T, LoxResult>;",
             t.base_class_name.to_lowercase(),
             base_name.to_lowercase(),
-            t.class_name
+            t.class_name,
+            base_name
         )?;
     }
     writeln!(file, "}}\n")?;
 
+    /*
     for t in &tree_types {
         writeln!(file, "impl {} {{", t.class_name)?;
         writeln!(
@@ -135,5 +138,7 @@ fn define_ast(
         writeln!(file, "    }}")?;
         writeln!(file, "}}\n")?;
     }
+    */
+
     Ok(())
 }

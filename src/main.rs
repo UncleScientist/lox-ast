@@ -7,7 +7,7 @@ mod expr;
 mod lox_function;
 mod native_functions;
 mod object;
-mod resolver;
+// mod resolver;
 mod stmt;
 
 // mod ast_printer;

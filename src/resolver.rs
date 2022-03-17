@@ -12,6 +12,7 @@ struct Resolver {
     scopes: RefCell<Vec<RefCell<HashMap<String, bool>>>>,
 }
 
+/*
 impl Resolver {
     pub fn new(interpreter: Interpreter) -> Self {
         Self {
@@ -20,39 +21,40 @@ impl Resolver {
         }
     }
 }
+*/
 
 impl StmtVisitor<()> for Resolver {
-    fn visit_return_stmt(&self, _stmt: &ReturnStmt) -> Result<(), LoxResult> {
+    fn visit_return_stmt(&self, _: &Stmt, _stmt: &ReturnStmt) -> Result<(), LoxResult> {
         Ok(())
     }
-    fn visit_function_stmt(&self, _stmt: &FunctionStmt) -> Result<(), LoxResult> {
+    fn visit_function_stmt(&self, _: &Stmt, _stmt: &FunctionStmt) -> Result<(), LoxResult> {
         Ok(())
     }
-    fn visit_break_stmt(&self, _stmt: &BreakStmt) -> Result<(), LoxResult> {
+    fn visit_break_stmt(&self, _: &Stmt, _stmt: &BreakStmt) -> Result<(), LoxResult> {
         Ok(())
     }
-    fn visit_while_stmt(&self, _stmt: &WhileStmt) -> Result<(), LoxResult> {
+    fn visit_while_stmt(&self, _: &Stmt, _stmt: &WhileStmt) -> Result<(), LoxResult> {
         Ok(())
     }
-    fn visit_if_stmt(&self, _stmt: &IfStmt) -> Result<(), LoxResult> {
+    fn visit_if_stmt(&self, _: &Stmt, _stmt: &IfStmt) -> Result<(), LoxResult> {
         Ok(())
     }
 
-    fn visit_block_stmt(&self, stmt: &BlockStmt) -> Result<(), LoxResult> {
+    fn visit_block_stmt(&self, _: &Stmt, stmt: &BlockStmt) -> Result<(), LoxResult> {
         self.begin_scope();
         self.resolve(&stmt.statements)?;
         self.end_scope();
         Ok(())
     }
 
-    fn visit_expression_stmt(&self, _stmt: &ExpressionStmt) -> Result<(), LoxResult> {
+    fn visit_expression_stmt(&self, _: &Stmt, _stmt: &ExpressionStmt) -> Result<(), LoxResult> {
         Ok(())
     }
-    fn visit_print_stmt(&self, _stmt: &PrintStmt) -> Result<(), LoxResult> {
+    fn visit_print_stmt(&self, _: &Stmt, _stmt: &PrintStmt) -> Result<(), LoxResult> {
         Ok(())
     }
 
-    fn visit_var_stmt(&self, stmt: &VarStmt) -> Result<(), LoxResult> {
+    fn visit_var_stmt(&self, _: &Stmt, stmt: &VarStmt) -> Result<(), LoxResult> {
         self.declare(&stmt.name);
         if let Some(init) = &stmt.initializer {
             self.resolve_expr(&init)?;
@@ -63,29 +65,47 @@ impl StmtVisitor<()> for Resolver {
 }
 
 impl ExprVisitor<()> for Resolver {
-    fn visit_call_expr(&self, _expr: &CallExpr) -> Result<(), LoxResult> {
+    fn visit_call_expr(&self, _: &Expr, _expr: &CallExpr) -> Result<(), LoxResult> {
         Ok(())
     }
-    fn visit_logical_expr(&self, _expr: &LogicalExpr) -> Result<(), LoxResult> {
+    fn visit_logical_expr(&self, _: &Expr, _expr: &LogicalExpr) -> Result<(), LoxResult> {
         Ok(())
     }
-    fn visit_assign_expr(&self, _expr: &AssignExpr) -> Result<(), LoxResult> {
+    fn visit_assign_expr(&self, _: &Expr, _expr: &AssignExpr) -> Result<(), LoxResult> {
         Ok(())
     }
-    fn visit_literal_expr(&self, _expr: &LiteralExpr) -> Result<(), LoxResult> {
+    fn visit_literal_expr(&self, _: &Expr, _expr: &LiteralExpr) -> Result<(), LoxResult> {
         Ok(())
     }
-    fn visit_grouping_expr(&self, _expr: &GroupingExpr) -> Result<(), LoxResult> {
+    fn visit_grouping_expr(&self, _: &Expr, _expr: &GroupingExpr) -> Result<(), LoxResult> {
         Ok(())
     }
-    fn visit_binary_expr(&self, _expr: &BinaryExpr) -> Result<(), LoxResult> {
+    fn visit_binary_expr(&self, _: &Expr, _expr: &BinaryExpr) -> Result<(), LoxResult> {
         Ok(())
     }
-    fn visit_unary_expr(&self, _expr: &UnaryExpr) -> Result<(), LoxResult> {
+    fn visit_unary_expr(&self, _: &Expr, _expr: &UnaryExpr) -> Result<(), LoxResult> {
         Ok(())
     }
-    fn visit_variable_expr(&self, _expr: &VariableExpr) -> Result<(), LoxResult> {
-        Ok(())
+
+    fn visit_variable_expr(&self, wrapper: &Expr, expr: &VariableExpr) -> Result<(), LoxResult> {
+        if !self.scopes.borrow().is_empty()
+            && !self
+                .scopes
+                .borrow()
+                .last()
+                .unwrap()
+                .borrow()
+                .get(&expr.name.as_string())
+                .unwrap()
+        {
+            Err(LoxResult::runtime_error(
+                &expr.name,
+                "Can't read local variable in its own initizlier.",
+            ))
+        } else {
+            self.resolve_local(wrapper, &expr.name);
+            Ok(())
+        }
     }
 }
 
@@ -132,6 +152,15 @@ impl Resolver {
                 .unwrap()
                 .borrow_mut()
                 .insert(name.as_string(), true);
+        }
+    }
+
+    fn resolve_local(&self, expr: &Expr, name: &Token) {
+        for (scope, map) in self.scopes.borrow().iter().rev().enumerate() {
+            if map.borrow().contains_key(&name.as_string()) {
+                self.interpreter.resolve(expr, scope);
+                return;
+            }
         }
     }
 }
