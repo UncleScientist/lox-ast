@@ -30,7 +30,7 @@ impl StmtVisitor<()> for Interpreter {
     fn visit_function_stmt(&self, stmt: &FunctionStmt) -> Result<(), LoxResult> {
         let function = LoxFunction::new(stmt, self.environment.borrow().deref());
         self.environment.borrow().borrow_mut().define(
-            stmt.name.as_string(),
+            &stmt.name.as_string(),
             Object::Func(Callable {
                 func: Rc::new(function),
             }),
@@ -99,7 +99,7 @@ impl StmtVisitor<()> for Interpreter {
         self.environment
             .borrow()
             .borrow_mut()
-            .define(stmt.name.as_string(), value);
+            .define(&stmt.name.as_string(), value);
         Ok(())
     }
 }

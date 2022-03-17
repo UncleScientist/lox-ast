@@ -33,7 +33,7 @@ impl Environment {
     }
 
     pub fn get(&self, name: &Token) -> Result<Object, LoxResult> {
-        if let Some(object) = self.values.get(name.as_string()) {
+        if let Some(object) = self.values.get(&name.as_string()) {
             Ok(object.clone())
         } else if let Some(enclosing) = &self.enclosing {
             enclosing.borrow().get(name)

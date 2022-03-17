@@ -32,7 +32,7 @@ impl LoxCallable for LoxFunction {
         let mut e = Environment::new_with_enclosing(Rc::clone(&self.closure));
 
         for (param, arg) in self.params.iter().zip(arguments.iter()) {
-            e.define(param.as_string(), arg.clone());
+            e.define(&param.as_string(), arg.clone());
         }
 
         match interpreter.execute_block(&self.body, e) {
@@ -47,6 +47,6 @@ impl LoxCallable for LoxFunction {
     }
 
     fn to_string(&self) -> String {
-        self.name.as_string().into()
+        self.name.as_string()
     }
 }
