@@ -12,7 +12,6 @@ struct Resolver {
     scopes: RefCell<Vec<RefCell<HashMap<String, bool>>>>,
 }
 
-/*
 impl Resolver {
     pub fn new(interpreter: Interpreter) -> Self {
         Self {
@@ -21,7 +20,6 @@ impl Resolver {
         }
     }
 }
-*/
 
 impl StmtVisitor<()> for Resolver {
     fn visit_return_stmt(&self, _: &Stmt, _stmt: &ReturnStmt) -> Result<(), LoxResult> {

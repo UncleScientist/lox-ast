@@ -17,11 +17,11 @@ pub struct Interpreter {
     pub globals: Rc<RefCell<Environment>>,
     environment: RefCell<Rc<RefCell<Environment>>>,
     nest: RefCell<usize>,
-    _locals: RefCell<HashMap<Expr, usize>>,
+    locals: RefCell<HashMap<Rc<Expr>, usize>>,
 }
 
 impl StmtVisitor<()> for Interpreter {
-    fn visit_return_stmt(&self, wrapper: &Rc<Stmt>, stmt: &ReturnStmt) -> Result<(), LoxResult> {
+    fn visit_return_stmt(&self, _: &Rc<Stmt>, stmt: &ReturnStmt) -> Result<(), LoxResult> {
         if let Some(value) = &stmt.value {
             Err(LoxResult::return_value(self.evaluate(value)?))
         } else {
@@ -265,7 +265,7 @@ impl Interpreter {
             globals: Rc::clone(&globals),
             environment: RefCell::new(Rc::clone(&globals)),
             nest: RefCell::new(0),
-            _locals: RefCell::new(HashMap::new()),
+            locals: RefCell::new(HashMap::new()),
         }
     }
 
@@ -315,8 +315,8 @@ impl Interpreter {
         println!("{:?}", self.environment);
     }
 
-    pub fn resolve(&self, _expr: &Expr, _depth: usize) {
-        // self.locals.borrow_mut().insert(expr, depth);
+    pub fn resolve(&self, expr: Rc<Expr>, depth: usize) {
+        self.locals.borrow_mut().insert(expr, depth);
     }
 }
 
