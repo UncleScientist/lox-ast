@@ -22,7 +22,7 @@ impl LoxFunction {
             name: declaration.name.dup(),
             params: Rc::clone(&declaration.params),
             body: Rc::clone(&declaration.body),
-            closure: Rc::clone(&closure),
+            closure: Rc::clone(closure),
         }
     }
 }
