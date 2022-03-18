@@ -1,5 +1,6 @@
 use std::env::args;
 use std::io::{self, stdout, BufRead, Write};
+use std::rc::Rc;
 
 mod callable;
 mod environment;
@@ -7,11 +8,10 @@ mod expr;
 mod lox_function;
 mod native_functions;
 mod object;
-mod resolver;
 mod stmt;
 
-// mod ast_printer;
-// use ast_printer::*;
+mod resolver;
+use resolver::*;
 
 mod error;
 use error::*;
@@ -88,11 +88,16 @@ impl Lox {
         }
         let mut scanner = Scanner::new(source);
         let tokens = scanner.scan_tokens()?;
+
         let mut parser = Parser::new(tokens);
         let statements = parser.parse()?;
 
         if parser.success() {
-            self.interpreter.interpret(&statements);
+            let resolver = Resolver::new(&self.interpreter);
+            let s = Rc::new(statements);
+            resolver.resolve(&Rc::clone(&s))?;
+
+            self.interpreter.interpret(&Rc::clone(&s));
         }
         Ok(())
     }

@@ -9,12 +9,12 @@ use crate::interpreter::*;
 use crate::stmt::*;
 use crate::token::*;
 
-struct Resolver {
-    interpreter: Interpreter,
+pub struct Resolver<'a> {
+    interpreter: &'a Interpreter,
     scopes: RefCell<Vec<RefCell<HashMap<String, bool>>>>,
 }
 
-impl StmtVisitor<()> for Resolver {
+impl<'a> StmtVisitor<()> for Resolver<'a> {
     fn visit_return_stmt(&self, _: Rc<Stmt>, stmt: &ReturnStmt) -> Result<(), LoxResult> {
         if let Some(value) = stmt.value.clone() {
             self.resolve_expr(value)?;
@@ -25,7 +25,7 @@ impl StmtVisitor<()> for Resolver {
         self.declare(&stmt.name);
         self.define(&stmt.name);
 
-        self.resolve_function(stmt);
+        self.resolve_function(stmt)?;
 
         Ok(())
     }
@@ -72,7 +72,7 @@ impl StmtVisitor<()> for Resolver {
     }
 }
 
-impl ExprVisitor<()> for Resolver {
+impl<'a> ExprVisitor<()> for Resolver<'a> {
     fn visit_call_expr(&self, _: Rc<Expr>, expr: &CallExpr) -> Result<(), LoxResult> {
         self.resolve_expr(expr.callee.clone())?;
 
@@ -113,14 +113,14 @@ impl ExprVisitor<()> for Resolver {
 
     fn visit_variable_expr(&self, wrapper: Rc<Expr>, expr: &VariableExpr) -> Result<(), LoxResult> {
         if !self.scopes.borrow().is_empty()
-            && !self
+            && self
                 .scopes
                 .borrow()
                 .last()
                 .unwrap()
                 .borrow()
                 .get(&expr.name.as_string())
-                .unwrap()
+                == Some(&false)
         {
             Err(LoxResult::runtime_error(
                 &expr.name,
@@ -133,15 +133,15 @@ impl ExprVisitor<()> for Resolver {
     }
 }
 
-impl Resolver {
-    pub fn new(interpreter: Interpreter) -> Self {
+impl<'a> Resolver<'a> {
+    pub fn new(interpreter: &'a Interpreter) -> Self {
         Self {
             interpreter,
             scopes: RefCell::new(Vec::new()),
         }
     }
 
-    fn resolve(&self, statements: &Rc<Vec<Rc<Stmt>>>) -> Result<(), LoxResult> {
+    pub fn resolve(&self, statements: &Rc<Vec<Rc<Stmt>>>) -> Result<(), LoxResult> {
         for statement in statements.deref() {
             self.resolve_stmt(statement.clone())?;
         }
