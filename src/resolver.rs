@@ -13,31 +13,54 @@ pub struct Resolver<'a> {
     interpreter: &'a Interpreter,
     scopes: RefCell<Vec<RefCell<HashMap<String, bool>>>>,
     had_error: RefCell<bool>,
+    current_function: RefCell<FunctionType>,
+    in_while: RefCell<bool>,
+}
+
+#[derive(PartialEq)]
+enum FunctionType {
+    None,
+    Function,
 }
 
 impl<'a> StmtVisitor<()> for Resolver<'a> {
     fn visit_return_stmt(&self, _: Rc<Stmt>, stmt: &ReturnStmt) -> Result<(), LoxResult> {
+        if *self.current_function.borrow() == FunctionType::None {
+            self.error(&stmt.keyword, "Can't return from top-level code.");
+        }
+
         if let Some(value) = stmt.value.clone() {
             self.resolve_expr(value)?;
         }
         Ok(())
     }
+
     fn visit_function_stmt(&self, _: Rc<Stmt>, stmt: &FunctionStmt) -> Result<(), LoxResult> {
         self.declare(&stmt.name);
         self.define(&stmt.name);
 
-        self.resolve_function(stmt)?;
+        self.resolve_function(stmt, FunctionType::Function)?;
 
         Ok(())
     }
-    fn visit_break_stmt(&self, _: Rc<Stmt>, _stmt: &BreakStmt) -> Result<(), LoxResult> {
+
+    fn visit_break_stmt(&self, _: Rc<Stmt>, stmt: &BreakStmt) -> Result<(), LoxResult> {
+        if !*self.in_while.borrow() {
+            self.error(&stmt.token, "Break statement outside of a while/for loop.");
+        }
+
         Ok(())
     }
+
     fn visit_while_stmt(&self, _: Rc<Stmt>, stmt: &WhileStmt) -> Result<(), LoxResult> {
+        let previous_nesting = self.in_while.replace(true);
         self.resolve_expr(stmt.condition.clone())?;
         self.resolve_stmt(stmt.body.clone())?;
+
+        self.in_while.replace(previous_nesting);
         Ok(())
     }
+
     fn visit_if_stmt(&self, _: Rc<Stmt>, stmt: &IfStmt) -> Result<(), LoxResult> {
         self.resolve_expr(stmt.condition.clone())?;
         self.resolve_stmt(stmt.then_branch.clone())?;
@@ -140,6 +163,8 @@ impl<'a> Resolver<'a> {
             interpreter,
             scopes: RefCell::new(Vec::new()),
             had_error: RefCell::new(false),
+            current_function: RefCell::new(FunctionType::None),
+            in_while: RefCell::new(false),
         }
     }
 
@@ -195,7 +220,13 @@ impl<'a> Resolver<'a> {
         }
     }
 
-    fn resolve_function(&self, function: &FunctionStmt) -> Result<(), LoxResult> {
+    fn resolve_function(
+        &self,
+        function: &FunctionStmt,
+        ftype: FunctionType,
+    ) -> Result<(), LoxResult> {
+        let enclosing_function = self.current_function.replace(ftype);
+
         self.begin_scope();
 
         for param in function.params.iter() {
@@ -206,6 +237,8 @@ impl<'a> Resolver<'a> {
         self.resolve(&function.body)?;
 
         self.end_scope();
+        self.current_function.replace(enclosing_function);
+
         Ok(())
     }
 
