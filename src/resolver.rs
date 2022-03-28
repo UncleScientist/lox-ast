@@ -12,6 +12,7 @@ use crate::token::*;
 pub struct Resolver<'a> {
     interpreter: &'a Interpreter,
     scopes: RefCell<Vec<RefCell<HashMap<String, bool>>>>,
+    had_error: RefCell<bool>,
 }
 
 impl<'a> StmtVisitor<()> for Resolver<'a> {
@@ -138,6 +139,7 @@ impl<'a> Resolver<'a> {
         Self {
             interpreter,
             scopes: RefCell::new(Vec::new()),
+            had_error: RefCell::new(false),
         }
     }
 
@@ -146,6 +148,10 @@ impl<'a> Resolver<'a> {
             self.resolve_stmt(statement.clone())?;
         }
         Ok(())
+    }
+
+    pub fn success(&self) -> bool {
+        !*self.had_error.borrow()
     }
 
     fn resolve_stmt(&self, stmt: Rc<Stmt>) -> Result<(), LoxResult> {
@@ -165,24 +171,18 @@ impl<'a> Resolver<'a> {
     }
 
     fn declare(&self, name: &Token) {
-        if !self.scopes.borrow().is_empty() {
-            self.scopes
-                .borrow()
-                .last()
-                .unwrap()
-                .borrow_mut()
-                .insert(name.as_string(), false);
+        if let Some(scope) = self.scopes.borrow().last() {
+            if scope.borrow().contains_key(&name.as_string()) {
+                self.error(name, "Already a variable with this name in this scope.");
+            }
+
+            scope.borrow_mut().insert(name.as_string(), false);
         }
     }
 
     fn define(&self, name: &Token) {
-        if !self.scopes.borrow().is_empty() {
-            self.scopes
-                .borrow()
-                .last()
-                .unwrap()
-                .borrow_mut()
-                .insert(name.as_string(), true);
+        if let Some(scope) = self.scopes.borrow().last() {
+            scope.borrow_mut().insert(name.as_string(), true);
         }
     }
 
@@ -207,5 +207,10 @@ impl<'a> Resolver<'a> {
 
         self.end_scope();
         Ok(())
+    }
+
+    fn error(&self, token: &Token, message: &str) {
+        self.had_error.replace(true);
+        LoxResult::runtime_error(token, message);
     }
 }
