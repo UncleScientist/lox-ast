@@ -5,6 +5,7 @@ use std::rc::Rc;
 mod callable;
 mod environment;
 mod expr;
+mod lox_class;
 mod lox_function;
 mod native_functions;
 mod object;
