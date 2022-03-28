@@ -1,6 +1,9 @@
+use std::rc::Rc;
+
 use crate::callable::*;
 use crate::error::*;
 use crate::interpreter::*;
+use crate::lox_instance::*;
 use crate::object::*;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -11,6 +14,15 @@ pub struct LoxClass {
 impl LoxClass {
     pub fn new(name: &String) -> Self {
         Self { name: name.clone() }
+    }
+
+    pub fn instantiate(
+        &self,
+        _interpreter: &Interpreter,
+        _arguments: Vec<Object>,
+        klass: Rc<LoxClass>,
+    ) -> Result<Object, LoxResult> {
+        Ok(Object::Instance(LoxInstance::new(klass)))
     }
 }
 
@@ -28,7 +40,7 @@ impl LoxCallable for LoxClass {
         _interpreter: &Interpreter,
         _arguments: Vec<Object>,
     ) -> Result<Object, LoxResult> {
-        Ok(Object::Num(45.67))
+        Err(LoxResult::system_error("tried to call a class"))
     }
 
     fn arity(&self) -> usize {
