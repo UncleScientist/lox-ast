@@ -27,7 +27,20 @@ impl StmtVisitor<()> for Interpreter {
             .borrow()
             .borrow_mut()
             .define(&stmt.name.as_string(), Object::Nil);
-        let klass = Object::Class(Rc::new(LoxClass::new(&stmt.name.as_string())));
+
+        let mut methods = HashMap::new();
+        for method in stmt.methods.deref() {
+            if let Stmt::Function(func) = method.deref() {
+                let function = Object::Func(Callable {
+                    func: Rc::new(LoxFunction::new(func, &self.environment.borrow())),
+                });
+                methods.insert(func.name.as_string(), function);
+            } else {
+                panic!("non-function method in class");
+            };
+        }
+
+        let klass = Object::Class(Rc::new(LoxClass::new(&stmt.name.as_string(), methods)));
         self.environment
             .borrow()
             .borrow_mut()

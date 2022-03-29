@@ -21,12 +21,27 @@ pub struct Resolver<'a> {
 enum FunctionType {
     None,
     Function,
+    Method,
 }
 
 impl<'a> StmtVisitor<()> for Resolver<'a> {
     fn visit_class_stmt(&self, _: Rc<Stmt>, stmt: &ClassStmt) -> Result<(), LoxResult> {
         self.declare(&stmt.name);
         self.define(&stmt.name);
+
+        for method in stmt.methods.deref() {
+            let declaration = FunctionType::Method;
+
+            if let Stmt::Function(method) = method.deref() {
+                self.resolve_function(method, declaration)?;
+            } else {
+                return Err(LoxResult::runtime_error(
+                    &stmt.name,
+                    "Class method did not resolve into a function statement",
+                ));
+            }
+        }
+
         Ok(())
     }
 

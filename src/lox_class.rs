@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::callable::*;
@@ -9,12 +10,14 @@ use crate::object::*;
 #[derive(Debug, Clone, PartialEq)]
 pub struct LoxClass {
     name: String,
+    methods: HashMap<String, Object>,
 }
 
 impl LoxClass {
-    pub fn new(name: &str) -> Self {
+    pub fn new(name: &str, methods: HashMap<String, Object>) -> Self {
         Self {
             name: name.to_string(),
+            methods,
         }
     }
 
@@ -25,6 +28,10 @@ impl LoxClass {
         klass: Rc<LoxClass>,
     ) -> Result<Object, LoxResult> {
         Ok(Object::Instance(Rc::new(LoxInstance::new(klass))))
+    }
+
+    pub fn find_method(&self, name: &str) -> Option<Object> {
+        self.methods.get(name).cloned()
     }
 }
 
