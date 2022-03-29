@@ -113,6 +113,20 @@ impl StmtVisitor<()> for Interpreter {
 }
 
 impl ExprVisitor<Object> for Interpreter {
+    fn visit_set_expr(&self, _: Rc<Expr>, expr: &SetExpr) -> Result<Object, LoxResult> {
+        let object = self.evaluate(expr.object.clone())?;
+        if let Object::Instance(inst) = object {
+            let value = self.evaluate(expr.value.clone())?;
+            inst.set(&expr.name, value.clone());
+            Ok(value)
+        } else {
+            Err(LoxResult::runtime_error(
+                &expr.name,
+                "Only instances have fields",
+            ))
+        }
+    }
+
     fn visit_get_expr(&self, _: Rc<Expr>, expr: &GetExpr) -> Result<Object, LoxResult> {
         let object = self.evaluate(expr.object.clone())?;
         if let Object::Instance(inst) = object {

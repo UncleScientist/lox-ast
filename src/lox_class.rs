@@ -24,7 +24,7 @@ impl LoxClass {
         _arguments: Vec<Object>,
         klass: Rc<LoxClass>,
     ) -> Result<Object, LoxResult> {
-        Ok(Object::Instance(LoxInstance::new(klass)))
+        Ok(Object::Instance(Rc::new(LoxInstance::new(klass))))
     }
 }
 

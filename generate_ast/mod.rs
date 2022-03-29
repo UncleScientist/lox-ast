@@ -21,6 +21,7 @@ pub fn generate_ast(output_dir: &str) -> io::Result<()> {
             "Grouping : Rc<Expr> expression",
             "Literal  : Option<Object> value",
             "Logical  : Rc<Expr> left, Token operator, Rc<Expr> right",
+            "Set      : Rc<Expr> object, Token name, Rc<Expr> value",
             "Unary    : Token operator, Rc<Expr> right",
             "Variable : Token name",
         ],
