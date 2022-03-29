@@ -14,13 +14,13 @@ pub struct Callable {
 
 impl Debug for Callable {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", LoxCallable::to_string(self))
+        write!(f, "<Callable>")
     }
 }
 
 impl Display for Callable {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", LoxCallable::to_string(self))
+        write!(f, "<Callable>")
     }
 }
 
@@ -36,19 +36,4 @@ impl PartialEq for Callable {
 pub trait LoxCallable {
     fn call(&self, interpreter: &Interpreter, arguments: Vec<Object>) -> Result<Object, LoxResult>;
     fn arity(&self) -> usize;
-    fn to_string(&self) -> String;
-}
-
-impl LoxCallable for Callable {
-    fn call(&self, interpreter: &Interpreter, arguments: Vec<Object>) -> Result<Object, LoxResult> {
-        self.func.call(interpreter, arguments)
-    }
-
-    fn arity(&self) -> usize {
-        self.func.arity()
-    }
-
-    fn to_string(&self) -> String {
-        self.func.to_string()
-    }
 }

@@ -45,8 +45,10 @@ impl LoxCallable for LoxFunction {
     fn arity(&self) -> usize {
         self.params.len()
     }
+}
 
+impl std::string::ToString for LoxFunction {
     fn to_string(&self) -> String {
-        self.name.as_string()
+        format!("<Function {}>", self.name.as_string())
     }
 }

@@ -103,6 +103,11 @@ impl<'a> StmtVisitor<()> for Resolver<'a> {
 }
 
 impl<'a> ExprVisitor<()> for Resolver<'a> {
+    fn visit_get_expr(&self, _: Rc<Expr>, expr: &GetExpr) -> Result<(), LoxResult> {
+        self.resolve_expr(expr.object.clone())?;
+        Ok(())
+    }
+
     fn visit_call_expr(&self, _: Rc<Expr>, expr: &CallExpr) -> Result<(), LoxResult> {
         self.resolve_expr(expr.callee.clone())?;
 
@@ -112,11 +117,13 @@ impl<'a> ExprVisitor<()> for Resolver<'a> {
 
         Ok(())
     }
+
     fn visit_logical_expr(&self, _: Rc<Expr>, expr: &LogicalExpr) -> Result<(), LoxResult> {
         self.resolve_expr(expr.left.clone())?;
         self.resolve_expr(expr.right.clone())?;
         Ok(())
     }
+
     fn visit_assign_expr(&self, wrapper: Rc<Expr>, expr: &AssignExpr) -> Result<(), LoxResult> {
         self.resolve_expr(expr.value.clone())?;
         self.resolve_local(wrapper, &expr.name);
@@ -131,11 +138,13 @@ impl<'a> ExprVisitor<()> for Resolver<'a> {
         self.resolve_expr(expr.expression.clone())?;
         Ok(())
     }
+
     fn visit_binary_expr(&self, _: Rc<Expr>, expr: &BinaryExpr) -> Result<(), LoxResult> {
         self.resolve_expr(expr.left.clone())?;
         self.resolve_expr(expr.right.clone())?;
         Ok(())
     }
+
     fn visit_unary_expr(&self, _: Rc<Expr>, expr: &UnaryExpr) -> Result<(), LoxResult> {
         self.resolve_expr(expr.right.clone())?;
         Ok(())

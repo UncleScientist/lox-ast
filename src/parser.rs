@@ -454,6 +454,13 @@ impl<'a> Parser<'a> {
         loop {
             if self.is_match(&[TokenType::LeftParen]) {
                 expr = self.finish_call(&Rc::new(expr))?;
+            } else if self.is_match(&[TokenType::Dot]) {
+                let name =
+                    self.consume(TokenType::Identifier, "Expect property name after '.'.")?;
+                expr = Expr::Get(Rc::new(GetExpr {
+                    object: Rc::new(expr),
+                    name,
+                }));
             } else {
                 break;
             }

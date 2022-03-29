@@ -12,8 +12,10 @@ pub struct LoxClass {
 }
 
 impl LoxClass {
-    pub fn new(name: &String) -> Self {
-        Self { name: name.clone() }
+    pub fn new(name: &str) -> Self {
+        Self {
+            name: name.to_string(),
+        }
     }
 
     pub fn instantiate(
@@ -26,13 +28,11 @@ impl LoxClass {
     }
 }
 
-/*
 impl std::string::ToString for LoxClass {
     fn to_string(&self) -> String {
         self.name.clone()
     }
 }
-*/
 
 impl LoxCallable for LoxClass {
     fn call(
@@ -45,9 +45,5 @@ impl LoxCallable for LoxClass {
 
     fn arity(&self) -> usize {
         0
-    }
-
-    fn to_string(&self) -> String {
-        self.name.clone()
     }
 }

@@ -17,6 +17,7 @@ pub fn generate_ast(output_dir: &str) -> io::Result<()> {
             "Assign   : Token name, Rc<Expr> value",
             "Binary   : Rc<Expr> left, Token operator, Rc<Expr> right",
             "Call     : Rc<Expr> callee, Token paren, Vec<Rc<Expr>> arguments",
+            "Get      : Rc<Expr> object, Token name",
             "Grouping : Rc<Expr> expression",
             "Literal  : Option<Object> value",
             "Logical  : Rc<Expr> left, Token operator, Rc<Expr> right",
