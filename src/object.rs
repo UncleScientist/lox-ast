@@ -2,8 +2,8 @@ use std::cmp::*;
 use std::fmt;
 use std::rc::Rc;
 
-use crate::callable::*;
 use crate::lox_class::*;
+use crate::lox_function::*;
 use crate::lox_instance::*;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -11,7 +11,7 @@ pub enum Object {
     Num(f64),
     Str(String),
     Bool(bool),
-    Func(Callable),
+    Func(Rc<LoxFunction>),
     Class(Rc<LoxClass>),
     Instance(Rc<LoxInstance>),
     Nil,
