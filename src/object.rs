@@ -30,9 +30,9 @@ impl fmt::Display for Object {
                     write!(f, "false")
                 }
             }
-            Object::Func(func) => write!(f, "{}", func.to_string()),
-            Object::Class(c) => write!(f, "{}", c.to_string()),
-            Object::Instance(i) => write!(f, "{}", i.to_string()),
+            Object::Func(func) => write!(f, "{func}"),
+            Object::Class(c) => write!(f, "{c}"),
+            Object::Instance(i) => write!(f, "{i}"),
             Object::Nil => write!(f, "nil"),
             Object::ArithmeticError => panic!("Should not be trying to print this"),
         }

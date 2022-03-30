@@ -28,7 +28,7 @@ impl LoxInstance {
             Ok(o.get().clone())
         } else if let Some(method) = self.klass.find_method(&name.as_string()) {
             if let Object::Func(func) = method {
-                return Ok(func.bind(&Object::Instance(Rc::clone(this))));
+                Ok(func.bind(&Object::Instance(Rc::clone(this))))
             } else {
                 panic!("tried to bind 'this' to a non-function {method:?}");
             }
@@ -56,7 +56,7 @@ impl fmt::Display for LoxInstance {
         write!(
             f,
             "<Instance of {} {{ {} }}>",
-            self.klass.to_string(),
+            self.klass,
             fields.join(", ")
         )
     }

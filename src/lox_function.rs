@@ -20,7 +20,7 @@ pub struct LoxFunction {
 
 impl fmt::Debug for LoxFunction {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        write!(f, "{}", self.to_string())
+        write!(f, "{self}")
     }
 }
 
@@ -82,7 +82,13 @@ impl LoxCallable for LoxFunction {
         }
 
         match interpreter.execute_block(&self.body, e) {
-            Err(LoxResult::ReturnValue { value }) => Ok(value),
+            Err(LoxResult::ReturnValue { value }) => {
+                if self.is_initializer {
+                    self.closure.borrow().get_at(0, "this")
+                } else {
+                    Ok(value)
+                }
+            }
             Err(e) => Err(e),
             Ok(_) => {
                 if self.is_initializer {

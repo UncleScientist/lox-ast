@@ -22,6 +22,7 @@ pub struct Resolver<'a> {
 enum FunctionType {
     None,
     Function,
+    Initializer,
     Method,
 }
 
@@ -47,9 +48,12 @@ impl<'a> StmtVisitor<()> for Resolver<'a> {
             .insert("this".to_string(), true);
 
         for method in stmt.methods.deref() {
-            let declaration = FunctionType::Method;
-
             if let Stmt::Function(method) = method.deref() {
+                let declaration = if method.name.as_string() == "init" {
+                    FunctionType::Initializer
+                } else {
+                    FunctionType::Method
+                };
                 self.resolve_function(method, declaration)?;
             } else {
                 return Err(LoxResult::runtime_error(
@@ -71,6 +75,10 @@ impl<'a> StmtVisitor<()> for Resolver<'a> {
         }
 
         if let Some(value) = stmt.value.clone() {
+            if *self.current_function.borrow() == FunctionType::Initializer {
+                self.error(&stmt.keyword, "Can't return a value from an initializer.");
+            }
+
             self.resolve_expr(value)?;
         }
         Ok(())
