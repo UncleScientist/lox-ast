@@ -29,6 +29,14 @@ impl<'a> StmtVisitor<()> for Resolver<'a> {
         self.declare(&stmt.name);
         self.define(&stmt.name);
 
+        self.begin_scope();
+        self.scopes
+            .borrow()
+            .last()
+            .unwrap()
+            .borrow_mut()
+            .insert("this".to_string(), true);
+
         for method in stmt.methods.deref() {
             let declaration = FunctionType::Method;
 
@@ -41,6 +49,8 @@ impl<'a> StmtVisitor<()> for Resolver<'a> {
                 ));
             }
         }
+
+        self.end_scope();
 
         Ok(())
     }
@@ -118,6 +128,11 @@ impl<'a> StmtVisitor<()> for Resolver<'a> {
 }
 
 impl<'a> ExprVisitor<()> for Resolver<'a> {
+    fn visit_this_expr(&self, wrapper: Rc<Expr>, expr: &ThisExpr) -> Result<(), LoxResult> {
+        self.resolve_local(wrapper, &expr.keyword);
+        Ok(())
+    }
+
     fn visit_set_expr(&self, _: Rc<Expr>, expr: &SetExpr) -> Result<(), LoxResult> {
         self.resolve_expr(expr.value.clone())?;
         self.resolve_expr(expr.object.clone())?;

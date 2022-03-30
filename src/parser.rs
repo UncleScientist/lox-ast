@@ -498,6 +498,12 @@ impl<'a> Parser<'a> {
             })));
         }
 
+        if self.is_match(&[TokenType::This]) {
+            return Ok(Expr::This(Rc::new(ThisExpr {
+                keyword: self.previous().dup(),
+            })));
+        }
+
         if self.is_match(&[TokenType::Identifier]) {
             return Ok(Expr::Variable(Rc::new(VariableExpr {
                 name: self.previous().dup(),

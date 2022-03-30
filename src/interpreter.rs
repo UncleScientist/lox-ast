@@ -123,6 +123,10 @@ impl StmtVisitor<()> for Interpreter {
 }
 
 impl ExprVisitor<Object> for Interpreter {
+    fn visit_this_expr(&self, wrapper: Rc<Expr>, expr: &ThisExpr) -> Result<Object, LoxResult> {
+        self.look_up_variable(&expr.keyword, wrapper)
+    }
+
     fn visit_set_expr(&self, _: Rc<Expr>, expr: &SetExpr) -> Result<Object, LoxResult> {
         let object = self.evaluate(expr.object.clone())?;
         if let Object::Instance(inst) = object {
@@ -140,7 +144,7 @@ impl ExprVisitor<Object> for Interpreter {
     fn visit_get_expr(&self, _: Rc<Expr>, expr: &GetExpr) -> Result<Object, LoxResult> {
         let object = self.evaluate(expr.object.clone())?;
         if let Object::Instance(inst) = object {
-            Ok(inst.get(&expr.name)?)
+            Ok(inst.get(&expr.name, &inst)?)
         } else {
             Err(LoxResult::runtime_error(
                 &expr.name,
@@ -339,7 +343,6 @@ impl ExprVisitor<Object> for Interpreter {
         wrapper: Rc<Expr>,
         expr: &VariableExpr,
     ) -> Result<Object, LoxResult> {
-        // self.environment.borrow().borrow().get(&expr.name)
         self.look_up_variable(&expr.name, wrapper)
     }
 }
