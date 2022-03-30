@@ -31,8 +31,12 @@ impl StmtVisitor<()> for Interpreter {
         let mut methods = HashMap::new();
         for method in stmt.methods.deref() {
             if let Stmt::Function(func) = method.deref() {
-                let function =
-                    Object::Func(Rc::new(LoxFunction::new(func, &self.environment.borrow())));
+                let is_init = func.name.as_string() == "init";
+                let function = Object::Func(Rc::new(LoxFunction::new(
+                    func,
+                    &self.environment.borrow(),
+                    is_init,
+                )));
                 methods.insert(func.name.as_string(), function);
             } else {
                 panic!("non-function method in class");
@@ -57,7 +61,7 @@ impl StmtVisitor<()> for Interpreter {
     }
 
     fn visit_function_stmt(&self, _: Rc<Stmt>, stmt: &FunctionStmt) -> Result<(), LoxResult> {
-        let function = LoxFunction::new(stmt, self.environment.borrow().deref());
+        let function = LoxFunction::new(stmt, self.environment.borrow().deref(), false);
         self.environment
             .borrow()
             .borrow_mut()
