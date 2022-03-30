@@ -1,6 +1,7 @@
 use std::cell::RefCell;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
+use std::fmt;
 use std::rc::Rc;
 
 use crate::error::*;
@@ -40,8 +41,19 @@ impl LoxInstance {
     }
 }
 
-impl std::string::ToString for LoxInstance {
-    fn to_string(&self) -> String {
-        format!("<Instance of {}>", self.klass.to_string())
+impl fmt::Display for LoxInstance {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut fields = Vec::new();
+
+        for (k, v) in self.fields.borrow().iter() {
+            fields.push(format!("{k}={v}"))
+        }
+
+        write!(
+            f,
+            "<Instance of {} {{ {} }}>",
+            self.klass.to_string(),
+            fields.join(", ")
+        )
     }
 }

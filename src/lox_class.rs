@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fmt;
 use std::rc::Rc;
 
 use crate::callable::*;
@@ -35,9 +36,15 @@ impl LoxClass {
     }
 }
 
-impl std::string::ToString for LoxClass {
-    fn to_string(&self) -> String {
-        self.name.clone()
+impl fmt::Display for LoxClass {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let methods = self
+            .methods
+            .keys()
+            .cloned()
+            .collect::<Vec<String>>()
+            .join(", ");
+        write!(f, "<Class {} {{ {methods} }}>", self.name)
     }
 }
 
