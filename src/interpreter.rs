@@ -167,6 +167,7 @@ impl ExprVisitor<Object> for Interpreter {
 
         let (callfunc, klass): (Option<Rc<dyn LoxCallable>>, Option<Rc<LoxClass>>) = match callee {
             Object::Func(f) => (Some(f), None),
+            Object::Native(n) => (Some(n.func.clone()), None),
             Object::Class(c) => {
                 let klass = Rc::clone(&c);
                 (Some(c), Some(klass))
@@ -325,11 +326,12 @@ impl Interpreter {
     pub fn new() -> Interpreter {
         let globals = Rc::new(RefCell::new(Environment::new()));
 
-        /*
-        globals
-            .borrow_mut()
-            .define("clock", Object::Func(Rc::new(NativeClock {})));
-        */
+        globals.borrow_mut().define(
+            "clock",
+            Object::Native(Rc::new(LoxNative {
+                func: Rc::new(NativeClock {}),
+            })),
+        );
 
         Interpreter {
             globals: Rc::clone(&globals),
