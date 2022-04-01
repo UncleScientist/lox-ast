@@ -509,6 +509,13 @@ impl<'a> Parser<'a> {
             })));
         }
 
+        if self.is_match(&[TokenType::Super]) {
+            let keyword = self.previous().dup();
+            self.consume(TokenType::Dot, "Expect '.' after 'super'.")?;
+            let method = self.consume(TokenType::Identifier, "Expect superclass method name.")?;
+            return Ok(Expr::Super(Rc::new(SuperExpr { keyword, method })));
+        }
+
         if self.is_match(&[TokenType::This]) {
             return Ok(Expr::This(Rc::new(ThisExpr {
                 keyword: self.previous().dup(),

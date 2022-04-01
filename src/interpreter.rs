@@ -45,6 +45,14 @@ impl StmtVisitor<()> for Interpreter {
             .borrow_mut()
             .define(&stmt.name.as_string(), Object::Nil);
 
+        let enclosing = if let Some(ref s) = superclass {
+            let mut e = Environment::new_with_enclosing(self.environment.borrow().clone());
+            e.define("super", Object::Class(s.clone()));
+            Some(self.environment.replace(Rc::new(RefCell::new(e))))
+        } else {
+            None
+        };
+
         let mut methods = HashMap::new();
         for method in stmt.methods.deref() {
             if let Stmt::Function(func) = method.deref() {
@@ -65,6 +73,11 @@ impl StmtVisitor<()> for Interpreter {
             superclass,
             methods,
         )));
+
+        if let Some(previous) = enclosing {
+            self.environment.replace(previous);
+        }
+
         self.environment
             .borrow()
             .borrow_mut()
@@ -148,6 +161,46 @@ impl StmtVisitor<()> for Interpreter {
 }
 
 impl ExprVisitor<Object> for Interpreter {
+    fn visit_super_expr(&self, wrapper: Rc<Expr>, expr: &SuperExpr) -> Result<Object, LoxResult> {
+        let distance = *self.locals.borrow().get(&wrapper).unwrap();
+        let superclass = if let Some(sc) = self
+            .environment
+            .borrow()
+            .borrow()
+            .get_at(distance, "super")
+            .ok()
+        {
+            if let Object::Class(superclass) = sc {
+                superclass
+            } else {
+                panic!("Unable to extract superclass");
+            }
+        } else {
+            panic!("Unable to extract superclass");
+        };
+
+        let object = self
+            .environment
+            .borrow()
+            .borrow()
+            .get_at(distance - 1, "this")
+            .ok()
+            .unwrap();
+
+        if let Some(method) = superclass.find_method(&expr.method.as_string()) {
+            if let Object::Func(func) = method {
+                Ok(func.bind(&object))
+            } else {
+                panic!("method was not a function");
+            }
+        } else {
+            Err(LoxResult::runtime_error(
+                &expr.method,
+                &format!("Undefined property '{}'.", expr.method.as_string()),
+            ))
+        }
+    }
+
     fn visit_this_expr(&self, wrapper: Rc<Expr>, expr: &ThisExpr) -> Result<Object, LoxResult> {
         self.look_up_variable(&expr.keyword, wrapper)
     }

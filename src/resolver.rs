@@ -30,6 +30,7 @@ enum FunctionType {
 enum ClassType {
     None,
     Class,
+    Subclass,
 }
 
 impl<'a> StmtVisitor<()> for Resolver<'a> {
@@ -40,12 +41,22 @@ impl<'a> StmtVisitor<()> for Resolver<'a> {
         self.define(&stmt.name);
 
         if let Some(superclass) = &stmt.superclass {
+            self.current_class.replace(ClassType::Subclass);
+
             if let Expr::Variable(v) = &superclass.deref() {
                 if v.name.as_string() == stmt.name.as_string() {
                     self.error(&v.name, "A class can't inherit from itself.");
                 }
             }
             self.resolve_expr(superclass.clone())?;
+
+            self.begin_scope();
+            self.scopes
+                .borrow()
+                .last()
+                .unwrap()
+                .borrow_mut()
+                .insert("super".to_string(), true);
         }
 
         self.begin_scope();
@@ -73,8 +84,11 @@ impl<'a> StmtVisitor<()> for Resolver<'a> {
         }
 
         self.end_scope();
-        self.current_class.replace(enclosing_class);
+        if stmt.superclass.is_some() {
+            self.end_scope();
+        }
 
+        self.current_class.replace(enclosing_class);
         Ok(())
     }
 
@@ -155,6 +169,24 @@ impl<'a> StmtVisitor<()> for Resolver<'a> {
 }
 
 impl<'a> ExprVisitor<()> for Resolver<'a> {
+    fn visit_super_expr(&self, wrapper: Rc<Expr>, expr: &SuperExpr) -> Result<(), LoxResult> {
+        match self.current_class.borrow().deref() {
+            ClassType::None => {
+                self.error(&expr.keyword, "Can't use 'super' outside of a class.");
+            }
+            ClassType::Subclass => {}
+            _ => {
+                self.error(
+                    &expr.keyword,
+                    "Can't use 'super' in a class with no superclass.",
+                );
+            }
+        }
+
+        self.resolve_local(wrapper, &expr.keyword);
+        Ok(())
+    }
+
     fn visit_this_expr(&self, wrapper: Rc<Expr>, expr: &ThisExpr) -> Result<(), LoxResult> {
         if *self.current_class.borrow() == ClassType::None {
             self.error(&expr.keyword, "Can't use 'this' outside of a class.");
