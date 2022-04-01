@@ -165,11 +165,13 @@ impl ExprVisitor<Object> for Interpreter {
             arguments.push(self.evaluate(argument)?);
         }
 
-        /*
-        let callfunc: Option<Rc<dyn LoxCallable>> = match callee {
-            Object::Func(f) => Some(f),
-            Object::Class(c) => Some(c),
-            _ => None,
+        let (callfunc, klass): (Option<Rc<dyn LoxCallable>>, Option<Rc<LoxClass>>) = match callee {
+            Object::Func(f) => (Some(f), None),
+            Object::Class(c) => {
+                let klass = Rc::clone(&c);
+                (Some(c), Some(klass))
+            }
+            _ => (None, None),
         };
 
         if let Some(callfunc) = callfunc {
@@ -183,39 +185,7 @@ impl ExprVisitor<Object> for Interpreter {
                     ),
                 ));
             }
-            callfunc.call(self, arguments)
-        } else {
-            Err(LoxResult::runtime_error(
-                &expr.paren,
-                "Can only call functions and classes",
-            ))
-        }
-        */
-
-        if let Object::Func(function) = callee {
-            if arguments.len() != function.arity() {
-                return Err(LoxResult::runtime_error(
-                    &expr.paren,
-                    &format!(
-                        "Expected {} arguments but got {}.",
-                        function.arity(),
-                        arguments.len()
-                    ),
-                ));
-            }
-            function.call(self, arguments)
-        } else if let Object::Class(klass) = callee {
-            if arguments.len() != klass.arity() {
-                return Err(LoxResult::runtime_error(
-                    &expr.paren,
-                    &format!(
-                        "Expected {} arguments but got {}.",
-                        klass.arity(),
-                        arguments.len()
-                    ),
-                ));
-            }
-            klass.instantiate(self, arguments, Rc::clone(&klass))
+            callfunc.call(self, arguments, klass)
         } else {
             Err(LoxResult::runtime_error(
                 &expr.paren,
