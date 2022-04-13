@@ -53,12 +53,19 @@ impl LoxResult {
 
     fn report(&self, loc: &str) {
         match self {
-            LoxResult::ParseError { token, message }
-            | LoxResult::RuntimeError { token, message } => {
+            LoxResult::ParseError { token, message } => {
+                eprintln!(
+                    "[line {}] Error at '{}': {}",
+                    token.line,
+                    token.as_string(),
+                    message
+                );
+            }
+            LoxResult::RuntimeError { token, message } => {
                 if token.is(TokenType::Eof) {
-                    eprintln!("{} at end {}", token.line, message);
+                    eprintln!("[line {}] Error at end: {}", token.line, message);
                 } else {
-                    eprintln!("line {} at '{}' {}", token.line, token.as_string(), message);
+                    eprintln!("{}\n[line {}]", message, token.line);
                 }
             }
             LoxResult::Error { line, message } => {

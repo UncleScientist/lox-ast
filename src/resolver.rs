@@ -261,14 +261,14 @@ impl<'a> ExprVisitor<()> for Resolver<'a> {
                 .get(&expr.name.as_string())
                 == Some(&false)
         {
-            Err(LoxResult::runtime_error(
+            self.error(
                 &expr.name,
-                "Can't read local variable in its own initizlier.",
-            ))
+                "Can't read local variable in its own initializer.",
+            );
         } else {
             self.resolve_local(wrapper, &expr.name);
-            Ok(())
         }
+        Ok(())
     }
 }
 
@@ -360,6 +360,6 @@ impl<'a> Resolver<'a> {
 
     fn error(&self, token: &Token, message: &str) {
         self.had_error.replace(true);
-        LoxResult::runtime_error(token, message);
+        LoxResult::parse_error(token, message);
     }
 }

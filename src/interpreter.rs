@@ -443,16 +443,11 @@ impl Interpreter {
         !matches!(object, Object::Nil | Object::Bool(false))
     }
 
-    pub fn interpret(&self, statements: &[Rc<Stmt>]) -> bool {
-        let mut success = true;
+    pub fn interpret(&self, statements: &[Rc<Stmt>]) -> Result<(), LoxResult> {
         for statement in statements {
-            if self.execute(statement.clone()).is_err() {
-                success = false;
-                break;
-            }
+            self.execute(statement.clone())?;
         }
-
-        success
+        Ok(())
     }
 
     pub fn print_environment(&self) {
