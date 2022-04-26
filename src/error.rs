@@ -9,9 +9,14 @@ pub enum LoxResult {
     SystemError { message: String },
     ReturnValue { value: Object },
     Break,
+    Fail,
 }
 
 impl LoxResult {
+    pub fn fail() -> LoxResult {
+        LoxResult::Fail
+    }
+
     pub fn return_value(value: Object) -> LoxResult {
         LoxResult::ReturnValue { value }
     }
@@ -75,6 +80,9 @@ impl LoxResult {
                 eprintln!("System Error: {message}");
             }
             LoxResult::Break | LoxResult::ReturnValue { .. } => {}
+            LoxResult::Fail => {
+                panic!("should not get here")
+            }
         };
     }
 }

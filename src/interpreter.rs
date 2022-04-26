@@ -163,18 +163,10 @@ impl StmtVisitor<()> for Interpreter {
 impl ExprVisitor<Object> for Interpreter {
     fn visit_super_expr(&self, wrapper: Rc<Expr>, expr: &SuperExpr) -> Result<Object, LoxResult> {
         let distance = *self.locals.borrow().get(&wrapper).unwrap();
-        let superclass = if let Some(sc) = self
-            .environment
-            .borrow()
-            .borrow()
-            .get_at(distance, "super")
-            .ok()
+        let superclass = if let Ok(Object::Class(superclass)) =
+            self.environment.borrow().borrow().get_at(distance, "super")
         {
-            if let Object::Class(superclass) = sc {
-                superclass
-            } else {
-                panic!("Unable to extract superclass");
-            }
+            superclass
         } else {
             panic!("Unable to extract superclass");
         };

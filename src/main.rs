@@ -93,17 +93,16 @@ impl Lox {
         let mut parser = Parser::new(tokens);
         let statements = parser.parse()?;
 
-        if parser.success() {
-            let resolver = Resolver::new(&self.interpreter);
-            let s = Rc::new(statements);
-            resolver.resolve(&Rc::clone(&s))?;
+        let resolver = Resolver::new(&self.interpreter);
+        let s = Rc::new(statements);
+        resolver.resolve(&Rc::clone(&s))?;
 
-            if resolver.success() {
-                self.interpreter.interpret(&Rc::clone(&s))?;
-            } else {
-                std::process::exit(65);
-            }
+        if resolver.success() {
+            self.interpreter.interpret(&Rc::clone(&s))?;
+        } else {
+            std::process::exit(65);
         }
+
         Ok(())
     }
 }

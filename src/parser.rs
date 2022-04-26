@@ -27,11 +27,11 @@ impl<'a> Parser<'a> {
         while !self.is_at_end() {
             statements.push(self.declaration()?)
         }
-        Ok(statements)
-    }
-
-    pub fn success(&self) -> bool {
-        !self.had_error
+        if self.had_error {
+            Err(LoxResult::fail())
+        } else {
+            Ok(statements)
+        }
     }
 
     fn expression(&mut self) -> Result<Expr, LoxResult> {

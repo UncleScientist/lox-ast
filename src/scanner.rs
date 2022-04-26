@@ -124,9 +124,9 @@ impl Scanner {
                 self.identifier();
             }
             _ => {
-                return Err(LoxResult::error(self.line, "Unexpected character"));
+                LoxResult::error(self.line, "Unexpected character.");
             }
-        }
+        };
 
         Ok(())
     }
