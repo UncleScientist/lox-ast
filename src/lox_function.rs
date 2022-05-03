@@ -113,14 +113,6 @@ impl LoxCallable for LoxFunction {
 
 impl fmt::Display for LoxFunction {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let paramlist = self
-            .params
-            .iter()
-            .map(|p| p.as_string())
-            .collect::<Vec<String>>()
-            .join(", ");
-
-        // <Function foo(a, b, c)>
-        write!(f, "<Function {}({paramlist})>", self.name.as_string())
+        write!(f, "<fn {}>", self.name.as_string())
     }
 }

@@ -30,7 +30,7 @@ impl fmt::Debug for LoxNative {
 
 impl fmt::Display for LoxNative {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "<Native-Function>")
+        write!(f, "<native fn>")
     }
 }
 
