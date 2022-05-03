@@ -206,7 +206,7 @@ impl ExprVisitor<Object> for Interpreter {
         } else {
             Err(LoxResult::runtime_error(
                 &expr.name,
-                "Only instances have fields",
+                "Only instances have fields.",
             ))
         }
     }
@@ -218,7 +218,7 @@ impl ExprVisitor<Object> for Interpreter {
         } else {
             Err(LoxResult::runtime_error(
                 &expr.name,
-                "Only instances have properties",
+                "Only instances have properties.",
             ))
         }
     }
@@ -256,7 +256,7 @@ impl ExprVisitor<Object> for Interpreter {
         } else {
             Err(LoxResult::runtime_error(
                 &expr.paren,
-                "Can only call functions and classes",
+                "Can only call functions and classes.",
             ))
         }
     }

@@ -56,13 +56,7 @@ impl LoxClass {
 
 impl fmt::Display for LoxClass {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let methods = self
-            .methods
-            .keys()
-            .cloned()
-            .collect::<Vec<String>>()
-            .join(", ");
-        write!(f, "<Class {} {{ {methods} }}>", self.name)
+        write!(f, "{}", self.name)
     }
 }
 

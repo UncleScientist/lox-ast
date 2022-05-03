@@ -47,17 +47,6 @@ impl LoxInstance {
 
 impl fmt::Display for LoxInstance {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let mut fields = Vec::new();
-
-        for (k, v) in self.fields.borrow().iter() {
-            fields.push(format!("{k}={v}"))
-        }
-
-        write!(
-            f,
-            "<Instance of {} {{ {} }}>",
-            self.klass,
-            fields.join(", ")
-        )
+        write!(f, "{} instance", self.klass)
     }
 }
