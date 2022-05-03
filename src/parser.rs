@@ -448,7 +448,7 @@ impl<'a> Parser<'a> {
                 if arguments.len() >= 255 {
                     if !self.had_error {
                         let peek = self.peek().dup();
-                        self.error(&peek, "Can't have more than 255 arguments.");
+                        return Err(self.error(&peek, "Can't have more than 255 arguments."));
                     }
                 } else {
                     arguments.push(Rc::new(self.expression()?));
