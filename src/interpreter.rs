@@ -340,26 +340,38 @@ impl ExprVisitor<Object> for Interpreter {
                 TokenType::Equals => Object::Bool(left == right),
                 _ => Object::ArithmeticError,
             },
+            (Object::Bool(_), Object::Str(_)) | (Object::Str(_), Object::Bool(_)) => match op {
+                TokenType::BangEqual => Object::Bool(true),
+                TokenType::Equals => Object::Bool(false),
+                _ => Object::NumsOrStringsError,
+            },
             (Object::Nil, Object::Nil) => match op {
                 TokenType::BangEqual => Object::Bool(false),
                 TokenType::Equals => Object::Bool(true),
-                _ => Object::ArithmeticError,
+                _ => Object::NumsOrStringsError,
             },
-            (Object::Nil, _) => match op {
+            (Object::Nil, _) | (_, Object::Nil) => match op {
                 TokenType::Equals => Object::Bool(false),
                 TokenType::BangEqual => Object::Bool(true),
+                _ => Object::NumsOrStringsError,
+            },
+            _ => match op {
+                TokenType::BangEqual => Object::Bool(true),
+                TokenType::Equals => Object::Bool(false),
                 _ => Object::ArithmeticError,
             },
-            _ => Object::ArithmeticError,
         };
 
-        if result == Object::ArithmeticError {
-            Err(LoxResult::runtime_error(
+        match result {
+            Object::ArithmeticError => Err(LoxResult::runtime_error(
                 &expr.operator,
-                "Illegal expression",
-            ))
-        } else {
-            Ok(result)
+                "Operands must be numbers.",
+            )),
+            Object::NumsOrStringsError => Err(LoxResult::runtime_error(
+                &expr.operator,
+                "Operands must be two numbers or two strings.",
+            )),
+            _ => Ok(result),
         }
     }
 
@@ -369,7 +381,10 @@ impl ExprVisitor<Object> for Interpreter {
         match expr.operator.token_type() {
             TokenType::Minus => match right {
                 Object::Num(n) => Ok(Object::Num(-n)),
-                _ => Ok(Object::Nil),
+                _ => Err(LoxResult::runtime_error(
+                    &expr.operator,
+                    "Operand must be a number.",
+                )),
             },
             TokenType::Bang => Ok(Object::Bool(!self.is_truthy(&right))),
             _ => Err(LoxResult::error(

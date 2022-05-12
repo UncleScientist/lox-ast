@@ -18,6 +18,7 @@ pub enum Object {
     Native(Rc<LoxNative>),
     Nil,
     ArithmeticError,
+    NumsOrStringsError,
 }
 
 impl fmt::Display for Object {
@@ -37,7 +38,7 @@ impl fmt::Display for Object {
             Object::Instance(i) => write!(f, "{i}"),
             Object::Native(n) => write!(f, "{n}"),
             Object::Nil => write!(f, "nil"),
-            Object::ArithmeticError => panic!("Should not be trying to print this"),
+            _ => panic!("Should not be trying to print this"),
         }
     }
 }
