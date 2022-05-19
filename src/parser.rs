@@ -25,7 +25,9 @@ impl<'a> Parser<'a> {
     pub fn parse(&mut self) -> Result<Vec<Rc<Stmt>>, LoxResult> {
         let mut statements = Vec::new();
         while !self.is_at_end() {
-            statements.push(self.declaration()?)
+            if let Ok(d) = self.declaration() {
+                statements.push(d);
+            }
         }
         if self.had_error {
             Err(LoxResult::fail())
@@ -201,7 +203,7 @@ impl<'a> Parser<'a> {
 
     fn print_statement(&mut self) -> Result<Stmt, LoxResult> {
         let value = Rc::new(self.expression()?);
-        self.consume(TokenType::SemiColon, "Expect ';' after value.")?;
+        self.consume(TokenType::SemiColon, "Expect ';' after expression.")?;
         Ok(Stmt::Print(Rc::new(PrintStmt { expression: value })))
     }
 
@@ -246,7 +248,7 @@ impl<'a> Parser<'a> {
 
     fn expression_statement(&mut self) -> Result<Rc<Stmt>, LoxResult> {
         let expr = Rc::new(self.expression()?);
-        self.consume(TokenType::SemiColon, "Expect ';' after value.")?;
+        self.consume(TokenType::SemiColon, "Expect ';' after expression.")?;
         Ok(Rc::new(Stmt::Expression(Rc::new(ExpressionStmt {
             expression: expr,
         }))))
@@ -537,7 +539,7 @@ impl<'a> Parser<'a> {
         }
 
         let peek = self.peek().dup();
-        Err(LoxResult::parse_error(&peek, "Expect expression."))
+        Err(self.error(&peek, "Expect expression."))
     }
 
     fn consume(&mut self, ttype: TokenType, message: &str) -> Result<Token, LoxResult> {

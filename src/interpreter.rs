@@ -323,10 +323,14 @@ impl ExprVisitor<Object> for Interpreter {
             },
             (Object::Num(left), Object::Str(right)) => match op {
                 TokenType::Plus => Object::Str(format!("{left}{right}")),
+                TokenType::Equals => Object::Bool(false),
+                TokenType::BangEqual => Object::Bool(true),
                 _ => Object::ArithmeticError,
             },
             (Object::Str(left), Object::Num(right)) => match op {
                 TokenType::Plus => Object::Str(format!("{left}{right}")),
+                TokenType::Equals => Object::Bool(false),
+                TokenType::BangEqual => Object::Bool(true),
                 _ => Object::ArithmeticError,
             },
             (Object::Str(left), Object::Str(right)) => match op {
@@ -355,9 +359,12 @@ impl ExprVisitor<Object> for Interpreter {
                 TokenType::BangEqual => Object::Bool(true),
                 _ => Object::NumsOrStringsError,
             },
+            (Object::Func(a), Object::Func(b)) => Object::Bool(Rc::ptr_eq(&a, &b)),
+            (Object::Class(a), Object::Class(b)) => Object::Bool(Rc::ptr_eq(&a, &b)),
             _ => match op {
                 TokenType::BangEqual => Object::Bool(true),
                 TokenType::Equals => Object::Bool(false),
+                TokenType::Plus => Object::NumsOrStringsError,
                 _ => Object::ArithmeticError,
             },
         };
